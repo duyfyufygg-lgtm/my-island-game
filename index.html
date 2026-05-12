@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Island Survival - Thai Version</title>
+    <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@v6.1.1/dist/aframe-extras.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.9.0/nipplejs.min.js"></script>
+    <script src="https://unpkg.com/socket.io-client@4.7.2/dist/socket.io.min.js"></script>
+    <script src="https://unpkg.com/networked-aframe@0.12.0/dist/networked-aframe.min.js"></script>
+
+    <style>
+      body { margin: 0; overflow: hidden; user-select: none; -webkit-tap-highlight-color: transparent; }
+      #main-menu { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; background: #000; z-index: 1000; color: white; font-family: sans-serif; }
+      .menu-btn { padding: 15px 50px; font-size: 20px; border-radius: 10px; cursor: pointer; border: none; margin: 10px; font-weight: bold; background: #00ffcc; color: black; box-shadow: 0 0 15px rgba(0,255,204,0.4); }
+      
+      #damage-flash { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 0, 0, 0.5); z-index: 996; pointer-events: none; display: none; }
+      
+      #ui-layer { position: absolute; top: 20px; left: 20px; z-index: 999; color: white; font-family: 'Courier New', sans-serif; pointer-events: none; }
+      #health-bar { width: 200px; height: 18px; background: rgba(51, 51, 51, 0.8); border: 2px solid white; margin-top: 5px; }
+      #health-fill { width: 100%; height: 100%; background: #ff0000; transition: width 0.2s; }
+      
+      #customize-btn { position: absolute; top: 20px; right: 20px; z-index: 1000; padding: 10px 15px; font-size: 24px; border-radius: 12px; background: rgba(255, 255, 255, 0.2); color: white; border: 2px solid white; cursor: pointer; }
+      #customize-menu { position: absolute; top: 80px; right: 20px; z-index: 1000; background: rgba(0,0,0,0.85); border-radius: 15px; padding: 15px; border: 2px solid #00ffcc; display: flex; flex-direction: column; align-items: center; }
+      .skin-option { width: 80px; height: 80px; margin: 5px; cursor: pointer; border: 3px solid #fff; border-radius: 10px; overflow: hidden; background: #333; }
+      .skin-option img { width: 100%; height: 100%; object-fit: contain; }
+
+      #controls-ui { position: absolute; bottom: 0; left: 0; width: 100%; height: 100%; z-index: 998; pointer-events: none; }
+      #joystick-zone { position: absolute; bottom: 40px; left: 40px; width: 120px; height: 120px; pointer-events: auto; }
+      .fire-btn { position: absolute; bottom: 50px; right: 40px; width: 110px; height: 110px; border-radius: 50%; background: rgba(255, 0, 0, 0.7); color: white; border: 5px solid #fff; pointer-events: auto; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: bold; }
+      .hidden { display: none !important; }
+    </style>
+  </head>
+  <body>
+
+    <div id="damage-flash"></div>
+
+    <div id="main-menu">
+      <h1 style="color: #00ffcc; letter-spacing: 5px;">เกาะมหาสนุก</h1>
+      <button class="menu-btn" onclick="startGame('solo')">เล่นคนเดียว</button>
+      <button class="menu-btn" style="background:#444; color:white; margin-top:15px;" onclick="startGame('multi')">ออนไลน์</button>
+    </div>
+
+    <div id="ui-layer" class="hidden">
+      <div style="font-weight: bold; text-shadow: 2px 2px #000;">เลือด: <span id="hp-text">100</span></div>
+      <div id="health-bar"><div id="health-fill"></div></div>
+    </div>
+
+    <button id="customize-btn" class="hidden" onclick="toggleCustomizeMenu()">👕 เปลี่ยนชุด</button>
+    <div id="customize-menu" class="hidden">
+      <p style="color:white; margin:0 0 10px 0;">เลือกสกิน</p>
+      <div style="display:flex;">
+        <div class="skin-option" onclick="setMySkin('skinRed')"><img src="jjs.png"></div>
+        <div class="skin-option" onclick="setMySkin('skinBlue')"><img src="jjkl.png"></div>
+      </div>
+    </div>
+
+    <div id="controls-ui" class="hidden">
+      <div id="joystick-zone"></div>
+      <div id="shoot-btn" class="fire-btn">ยิง!!</div>
+    </div>
+
+    <a-scene id="scene" raycaster="objects: .targetable" renderer="colorManagement: true; exposure: 1.2;">
+      <a-assets>
+        <a-asset-item id="gunModel" src="asd.glb"></a-asset-item>
+        <a-asset-item id="islandModel" src="city.glb"></a-asset-item>
+        <img id="imgRed" src="jjs.png">
+        <img id="imgBlue" src="jjkl.png">
+        
+        <template id="player-template">
+          <a-entity class="targetable">
+            <a-image class="avatar-display" src="#imgRed" width="2" height="2" position="0 1 0"></a-image>
+          </a-entity>
+        </template>
+      </a-assets>
+
+      <a-sky color="#87CEEB"></a-sky>
+      <a-entity light="type: ambient; intensity: 1.8; color: #FFF"></a-entity>
+      <a-entity light="type: directional; intensity: 1.2;" position="1 10 5"></a-entity>
+
+      <a-plane position="0 0 0" rotation="-90 0 0" width="1000" height="1000" material="opacity: 0; transparent: true"></a-plane>
+      <a-entity id="island" gltf-model="#islandModel" position="0 -1.5 -30" scale="0.1 0.1 0.1"></a-entity>
+
+      <a-entity id="rig" position="0 0 0" networked="template: #player-template; attachTemplateToLocal: false;">
+        <a-entity id="camera" camera position="0 1.6 0" look-controls="touchEnabled: true; magicWindowTrackingEnabled: false">
+          
+          <a-entity id="weapon-container" position="0.35 -0.5 -0.8">
+             <a-entity id="weapon"
+                gltf-model="#gunModel"
+                rotation="0 -11 0" 
+                scale="0.5 0.5 0.5"
+                visible="false">
+             </a-entity>
+          </a-entity>
+
+          <a-entity id="crosshair" cursor position="0 0 -1" 
+                    geometry="primitive: ring; radiusInner: 0.008; radiusOuter: 0.012" 
+                    material="color: #00ff00; shader: flat"
+                    raycaster="objects: .targetable; far: 100">
+          </a-entity>
+        </a-entity>
+      </a-entity>
+
+      <a-image id="bot-enemy" class="targetable" src="#imgRed" position="0 2 -15" width="5" height="5" visible="false" data-hp="100"></a-image>
+    </a-scene>
+
+    <script>
+      let health = 100;
+      let isMulti = false;
+      let criticalInterval = null;
+
+      function startGame(mode) {
+        health = 100; updateUI();
+        document.getElementById('main-menu').classList.add('hidden');
+        document.getElementById('controls-ui').classList.remove('hidden');
+        document.getElementById('ui-layer').classList.remove('hidden');
+        document.getElementById('customize-btn').classList.remove('hidden');
+        document.querySelector('#weapon').setAttribute('visible', 'true');
+        if (mode === 'solo') {
+          document.getElementById('bot-enemy').setAttribute('visible', 'true');
+        } else {
+          isMulti = true;
+          document.getElementById('scene').setAttribute('networked-scene', 'serverURL: https://naf-examples.glitch.me/; app: thai_island_v1; room: battle_thai; adapter: socketio;');
+        }
+        initJoystick();
+      }
+
+      function toggleCustomizeMenu() {
+        document.getElementById('customize-menu').classList.toggle('hidden');
+      }
+
+      function setMySkin(skin) {
+        const skinSrc = (skin === 'skinRed') ? '#imgRed' : '#imgBlue';
+        if (isMulti) {
+          NAF.connection.broadcastData('change_skin', { 
+            targetId: NAF.utils.getNetworkId(document.getElementById('rig')), 
+            src: skinSrc 
+          });
+        }
+        toggleCustomizeMenu();
+      }
+
+      document.getElementById('shoot-btn').addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        const weapon = document.querySelector('#weapon');
+        weapon.setAttribute('position', '0 0 0.1'); 
+        setTimeout(() => weapon.setAttribute('position', '0 0 0'), 60);
+
+        const raycaster = document.querySelector('#crosshair').components.raycaster;
+        const intersections = raycaster.intersections;
+        if (intersections.length > 0) {
+          const target = intersections[0].object.el;
+          if (target.id === 'bot-enemy') {
+            let bHp = parseInt(target.getAttribute('data-hp')) - 25;
+            target.setAttribute('data-hp', bHp);
+            if (bHp <= 0) { target.setAttribute('visible', 'false'); setTimeout(() => { target.setAttribute('visible', 'true'); target.setAttribute('data-hp', 100); }, 3000); }
+          }
+          if (isMulti && target.hasAttribute('networked')) {
+            NAF.connection.broadcastData('take_damage', { targetId: NAF.utils.getNetworkId(target), damage: 20 });
+          }
+        }
+      });
+
+      function takeDamage(dmg) {
+        health -= dmg; if (health < 0) health = 0;
+        updateUI();
+        const flash = document.getElementById('damage-flash');
+        flash.style.display = 'block';
+        setTimeout(() => { if (health > 30) flash.style.display = 'none'; }, 100);
+        if (health <= 30 && health > 0 && !criticalInterval) {
+          criticalInterval = setInterval(() => { flash.style.display = (flash.style.display === 'none') ? 'block' : 'none'; }, 200);
+        }
+        if (health <= 0) { alert("คุณตายแล้ว!"); location.reload(); }
+      }
+
+      function updateUI() {
+        document.getElementById('hp-text').innerText = health;
+        document.getElementById('health-fill').style.width = health + "%";
+      }
+
+      document.body.addEventListener('clientConnected', () => {
+        NAF.connection.subscribeToData('take_damage', (senderId, dataType, data) => {
+          if (data.targetId === NAF.utils.getNetworkId(document.getElementById('rig'))) takeDamage(data.damage);
+        });
+        NAF.connection.subscribeToData('change_skin', (senderId, dataType, data) => {
+          const remoteEntity = NAF.entities.entities[data.targetId];
+          if (remoteEntity) {
+            const img = remoteEntity.el.querySelector('.avatar-display');
+            if (img) img.setAttribute('src', data.src);
+          }
+        });
+      });
+
+      function initJoystick() {
+        const manager = nipplejs.create({ zone: document.getElementById('joystick-zone'), mode: 'static', position: {left: '70px', bottom: '70px'}, color: 'white' });
+        manager.on('move', (evt, data) => {
+          const rig = document.querySelector('#rig');
+          const cam = document.querySelector('#camera');
+          let rot = cam.getAttribute('rotation').y * Math.PI / 180;
+          let speed = 0.22;
+          let pos = rig.getAttribute('position');
+          let moveF = Math.sin(data.angle.radian) * speed;
+          let moveS = Math.cos(data.angle.radian) * speed;
+          pos.x -= (Math.sin(rot) * moveF + Math.cos(rot) * moveS);
+          pos.z -= (Math.cos(rot) * moveF - Math.sin(rot) * moveS);
+          rig.setAttribute('position', pos);
+        });
+      }
+    </script>
+  </body>
+</html>
