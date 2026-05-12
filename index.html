@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Island Survival - Thai Version</title>
+    <title>Island Survival - Official v1.0</title>
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@v6.1.1/dist/aframe-extras.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.9.0/nipplejs.min.js"></script>
@@ -20,12 +20,12 @@
       #health-fill { width: 100%; height: 100%; background: #ff0000; transition: width 0.2s; }
       
       #customize-btn { position: absolute; top: 20px; right: 20px; z-index: 1000; padding: 10px 15px; font-size: 24px; border-radius: 12px; background: rgba(255, 255, 255, 0.2); color: white; border: 2px solid white; cursor: pointer; }
-      
-      /* ปุ่มขยายหน้าจอที่เพิ่มเข้าไปใหม่ */
       #fullscreen-btn { position: absolute; top: 80px; right: 20px; z-index: 1000; padding: 10px 15px; font-size: 18px; border-radius: 12px; background: #8e44ad; color: white; border: 2px solid white; cursor: pointer; font-weight: bold; }
       
-      #customize-menu { position: absolute; top: 140px; right: 20px; z-index: 1000; background: rgba(0,0,0,0.85); border-radius: 15px; padding: 15px; border: 2px solid #00ffcc; display: flex; flex-direction: column; align-items: center; }
-      .skin-option { width: 80px; height: 80px; margin: 5px; cursor: pointer; border: 3px solid #fff; border-radius: 10px; overflow: hidden; background: #333; }
+      /* ปรับเมนูแต่งตัวให้รองรับสกินที่มากขึ้น */
+      #customize-menu { position: absolute; top: 140px; right: 20px; z-index: 1000; background: rgba(0,0,0,0.85); border-radius: 15px; padding: 15px; border: 2px solid #00ffcc; display: flex; flex-direction: column; align-items: center; max-width: 200px; }
+      .skin-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+      .skin-option { width: 70px; height: 70px; cursor: pointer; border: 3px solid #fff; border-radius: 10px; overflow: hidden; background: #333; }
       .skin-option img { width: 100%; height: 100%; object-fit: contain; }
 
       #controls-ui { position: absolute; bottom: 0; left: 0; width: 100%; height: 100%; z-index: 998; pointer-events: none; }
@@ -53,10 +53,12 @@
     <button id="customize-btn" class="hidden" onclick="toggleCustomizeMenu()">👕 เปลี่ยนชุด</button>
     
     <div id="customize-menu" class="hidden">
-      <p style="color:white; margin:0 0 10px 0;">เลือกสกิน</p>
-      <div style="display:flex;">
+      <p style="color:white; margin:0 0 10px 0; font-size: 14px;">เลือกสกินละคร</p>
+      <div class="skin-grid">
         <div class="skin-option" onclick="setMySkin('skinRed')"><img src="jjs.png"></div>
         <div class="skin-option" onclick="setMySkin('skinBlue')"><img src="jjkl.png"></div>
+        <div class="skin-option" onclick="setMySkin('skinHerta')" title="The Herta"><img src="The Herta.png"></div>
+        <div class="skin-option" onclick="setMySkin('skinSparcy')" title="Sparcy"><img src="Sparcy.png"></div>
       </div>
     </div>
 
@@ -71,6 +73,8 @@
         <a-asset-item id="islandModel" src="city.glb"></a-asset-item>
         <img id="imgRed" src="jjs.png">
         <img id="imgBlue" src="jjkl.png">
+        <img id="imgHerta" src="The Herta.png">
+        <img id="imgSparcy" src="Sparcy.png">
         
         <template id="player-template">
           <a-entity class="targetable">
@@ -114,7 +118,6 @@
       let isMulti = false;
       let criticalInterval = null;
 
-      // ระบบจัดการ Fullscreen
       const fsBtn = document.getElementById('fullscreen-btn');
       fsBtn.addEventListener('click', () => {
         if (!document.fullscreenElement) {
@@ -135,7 +138,7 @@
         document.getElementById('controls-ui').classList.remove('hidden');
         document.getElementById('ui-layer').classList.remove('hidden');
         document.getElementById('customize-btn').classList.remove('hidden');
-        document.getElementById('fullscreen-btn').classList.remove('hidden'); // โชว์ปุ่มเต็มจอ
+        document.getElementById('fullscreen-btn').classList.remove('hidden');
         document.querySelector('#weapon').setAttribute('visible', 'true');
         if (mode === 'solo') {
           document.getElementById('bot-enemy').setAttribute('visible', 'true');
@@ -151,14 +154,18 @@
       }
 
       function setMySkin(skin) {
-        const skinSrc = (skin === 'skinRed') ? '#imgRed' : '#imgBlue';
+        let skinSrc = '#imgRed';
+        if (skin === 'skinBlue') skinSrc = '#imgBlue';
+        if (skin === 'skinHerta') skinSrc = '#imgHerta';
+        if (skin === 'skinSparcy') skinSrc = '#imgSparcy';
+
         if (isMulti) {
           NAF.connection.broadcastData('change_skin', { 
             targetId: NAF.utils.getNetworkId(document.getElementById('rig')), 
             src: skinSrc 
           });
         }
-        // แก้ไขให้เปลี่ยนสกินตัวเองด้วย
+        
         const myImg = document.querySelector('#rig .avatar-display');
         if(myImg) myImg.setAttribute('src', skinSrc);
         
@@ -233,5 +240,5 @@
       }
     </script>
   </body>
-  </html>
-  
+                                                                                                               </html>
+        
