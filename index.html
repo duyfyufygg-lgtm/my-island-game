@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Island Survival v2.0.4 - T-Rex Walk Only Update</title>
+    <title>Island Survival v3.0.1 - Axe Position Adjusted</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.2.0/dist/aframe-extras.min.js"></script>
@@ -24,12 +24,9 @@
       #joystick-zone { position: absolute; bottom: 40px; left: 40px; width: 120px; height: 120px; pointer-events: auto; }
       .fire-btn { position: absolute; bottom: 50px; right: 40px; width: 100px; height: 100px; border-radius: 50%; background: #ff4444; color: white; border: 4px solid #fff; pointer-events: auto; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: bold; z-index: 1001; }
       .hidden { display: none !important; }
-      #boss-announce { position: absolute; top: 50px; width: 100%; text-align: center; color: #ff0000; font-size: 30px; font-weight: bold; text-shadow: 3px 3px #000; z-index: 2000; pointer-events: none; }
     </style>
   </head>
   <body>
-
-    <div id="boss-announce" class="hidden">GIANT BOSS 67 ปรากฏตัวแล้ว!</div>
 
     <div id="main-menu">
       <h1 style="color: #00ffcc;">เกาะมหาสนุก v2.0.4</h1>
@@ -43,24 +40,25 @@
       </div>
       <p>2. เลือกสายการเล่น</p>
       <button class="role-btn" onclick="startGame('P1')">มือปืน (ATK 50)</button>
-      <button class="role-btn" onclick="startGame('P2')">มือขวาน (ATK 35 - ไวมาก)</button>
-      <button class="role-btn" onclick="openTankMenu()">สายแทงค์ (ATK 15 - T-Rex)</button>
+      <button class="role-btn" onclick="startGame('P2')">มือขวาน (ATK 35)</button>
+      <button class="role-btn" onclick="openTankMenu()">สายแทงค์ (T-Rex)</button>
     </div>
 
     <div id="tank-menu" class="hidden">
       <h2 style="color: #ff9900;">T-REX TANK MODE</h2>
       <div class="skin-container">
-        <div class="skin-btn active" style="width: 150px; height: 150px;"><img src="T-Rex_preview.png" alt="T-Rex"></div>
+        <div class="skin-btn active" style="width: 200px; height: 200px; border-width: 5px;">
+          <img src="Fetchingshop12.png" alt="T-Rex Skin Preview">
+        </div>
       </div>
-      <button class="tank-select-btn" onclick="startGame('P3')">ยืนยันเลือก T-Rex</button>
+      <button class="tank-select-btn" onclick="startGame('P3')">ยืนเลือก T-Rex</button>
       <br>
-      <button style="color: white; background: none; border: none; cursor: pointer;" onclick="closeTankMenu()">กลับไปหน้าหลัก</button>
+      <button style="color: white; background: none; border: none; cursor: pointer; margin-top: 10px;" onclick="closeTankMenu()">กลับไปหน้าหลัก</button>
     </div>
 
     <div id="ui-layer" class="hidden">
       <div id="my-id-text" style="color:gold; font-size:20px;"></div>
       <div>HP: <span id="hp-text">100</span></div>
-      <div id="boss-hp-ui" class="hidden" style="color: #ff4444;">BOSS HP: <span id="boss-hp-text">3000</span></div>
     </div>
 
     <div id="touch-area" class="hidden"></div>
@@ -75,7 +73,12 @@
         <a-asset-item id="axeModel" src="fps.glb"></a-asset-item> 
         <a-asset-item id="tankModel" src="T-Rex.glb"></a-asset-item>
         <a-asset-item id="islandModel" src="city.glb"></a-asset-item>
-        <img id="imgRed" src="jjs.png"><img id="imgBlue" src="jjkl.png"><img id="imgHerta" src="The Herta.png"><img id="imgSparcy" src="Sparcy.png"><img id="img67" src="67.png">
+        <img id="imgRed" src="jjs.png">
+        <img id="imgBlue" src="jjkl.png">
+        <img id="imgHerta" src="The Herta.png">
+        <img id="imgSparcy" src="Sparcy.png">
+        <img id="img67" src="67.png">
+        <img id="imgRexIcon" src="Fetchingshop12.png">
       </a-assets>
 
       <a-sky color="#87CEEB"></a-sky>
@@ -85,20 +88,17 @@
       <a-entity id="rig" position="0 0 0">
         <a-entity id="camera" camera position="0 1.6 0">
           <a-entity id="weapon-P1" gltf-model="#gunModel" position="0.3 -0.4 -0.6" rotation="0 -10 0" scale="0.4 0.4 0.4" visible="false"></a-entity>
+          
           <a-entity id="weapon-P2" position="0 0 0" visible="false">
-             <a-entity id="axe-model-inner" gltf-model="#axeModel" position="0 -1.4 -1.2" rotation="0 180 0" scale="1.2 1.2 1.2" animation-mixer="clip: idle; loop: repeat;"></a-entity>
+             <a-entity id="axe-model-inner" gltf-model="#axeModel" position="0.2 -0.6 -0.8" rotation="0 180 0" scale="1.2 1.2 1.2" animation-mixer="clip: idle; loop: repeat;"></a-entity>
           </a-entity>
+
           <a-entity id="weapon-P3" gltf-model="#gunModel" position="0.3 -0.4 -0.6" rotation="0 -10 0" scale="0.4 0.4 0.4" visible="false"></a-entity>
           <a-entity id="cursor-visual" position="0 0 -1" geometry="primitive: ring; radiusInner: 0.012; radiusOuter: 0.018" material="color: #00ff00; shader: flat; opacity: 0.8"></a-entity>
         </a-entity>
         
         <a-image id="my-skin-display" src="#imgRed" width="4" height="4" position="0 2 0"></a-image>
         <a-entity id="my-tank-model" gltf-model="#tankModel" scale="1.5 1.5 1.5" position="0 -1.5 0" rotation="0 180 0" visible="false" animation-mixer="clip: walk; loop: repeat;"></a-entity>
-      </a-entity>
-
-      <a-entity id="boss-67" visible="false">
-        <a-image src="#img67" width="20" height="20" position="0 10 0"></a-image>
-        <a-box class="targetable" data-id="BOSS" opacity="0" width="18" height="25" depth="5" position="0 10 0"></a-box>
       </a-entity>
 
       <a-entity id="player-P1" visible="false"><a-image src="#imgRed" width="4" height="4" position="0 2 0"></a-image><a-box class="targetable" data-id="P1" opacity="0" width="4" height="5" depth="1" position="0 2 0"></a-box></a-entity>
@@ -118,7 +118,6 @@
       const db = getDatabase(app);
 
       let health = 100, myRole = "", mySkin = "#imgRed", yaw = 0, attackDistance = 100, moveSpeed = 0.3;
-      let isMoving = false;
 
       window.selectSkin = function(s, b) {
         mySkin = s;
@@ -151,7 +150,11 @@
         if(role === 'P3') {
            health = 300; moveSpeed = 0.4;
            document.getElementById('my-skin-display').setAttribute('visible', false);
-           document.getElementById('my-tank-model').setAttribute('visible', true);
+           const tRex = document.getElementById('my-tank-model');
+           tRex.setAttribute('visible', true);
+           tRex.addEventListener('model-loaded', () => {
+              tRex.setAttribute('animation-mixer', {clip: 'walk', loop: 'repeat'});
+           });
            document.getElementById('my-id-text').innerText = "T-Rex Tank (HP: 300)";
            attackDistance = 10;
         } else {
@@ -183,7 +186,12 @@
                 ent.setAttribute('visible', players[id].hp > 0);
                 ent.setAttribute('position', players[id].p);
                 ent.setAttribute('rotation', players[id].r);
-                if(players[id].skin !== 'TANK') {
+                if(players[id].skin === 'TANK') {
+                   const otherRex = ent.querySelector('#player-P3-model');
+                   if(otherRex && !otherRex.getAttribute('animation-mixer')) {
+                      otherRex.setAttribute('animation-mixer', 'clip: walk; loop: repeat;');
+                   }
+                } else {
                   ent.querySelector('a-image').setAttribute('src', players[id].skin);
                 }
               }
@@ -213,36 +221,15 @@
         if (hits.length > 0) {
           const tid = hits[0].object.el.dataset.id;
           let dmg = (myRole === 'P1' ? 50 : (myRole === 'P2' ? 35 : 15));
-          if (tid === "BOSS") {
-            onValue(ref(db, `world/boss/hp`), s => {
-              let cur = s.val() || 0;
-              if (cur > 0) update(ref(db, `world/boss`), { hp: cur - dmg });
-            }, { onlyOnce: true });
-          } else if (tid !== myRole) {
+          if (tid !== myRole) {
             onValue(ref(db, `players/${tid}/hp`), s => update(ref(db, `players/${tid}`), { hp: (s.val() || 100) - dmg }), { onlyOnce: true });
           }
         }
       });
 
-      setInterval(() => {
-        update(ref(db, 'world/boss'), { hp: 3000, pos: {x: (Math.random()-0.5)*20, y: -1.5, z: -(Math.random()*20+15)}, active: true });
-        document.getElementById('boss-announce').classList.remove('hidden');
-        setTimeout(() => document.getElementById('boss-announce').classList.add('hidden'), 5000);
-      }, 300000);
-
-      onValue(ref(db, 'world/boss'), (snap) => {
-        const b = snap.val();
-        const bEl = document.getElementById('boss-67'), bUI = document.getElementById('boss-hp-ui');
-        if (b && b.active && b.hp > 0) {
-          bEl.setAttribute('visible', true); bEl.setAttribute('position', b.pos);
-          bUI.classList.remove('hidden'); document.getElementById('boss-hp-text').innerText = b.hp;
-        } else { bEl.setAttribute('visible', false); bUI.classList.add('hidden'); }
-      });
-
       function initJoystick() {
         nipplejs.create({ zone: document.getElementById('joystick-zone'), mode: 'static', position: {left: '70px', bottom: '70px'}, color: 'white' })
         .on('move', (evt, data) => {
-          isMoving = true;
           const rig = document.querySelector('#rig'), cam = document.querySelector('#camera');
           let r = cam.getAttribute('rotation').y * Math.PI / 180;
           let p = rig.getAttribute('position');
@@ -250,10 +237,9 @@
           p.x -= (Math.sin(r) * f + Math.cos(r) * s);
           p.z -= (Math.cos(r) * f - Math.sin(r) * s);
           rig.setAttribute('position', p);
-        })
-        .on('end', () => isMoving = false);
+        });
       }
     </script>
   </body>
-                                                                     </html>
-                                                                                  
+  </html>
+      
