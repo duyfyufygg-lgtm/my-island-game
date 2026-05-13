@@ -72,7 +72,7 @@
           
           <a-entity id="weapon-P1" gltf-model="#gunModel" position="0.3 -0.4 -0.6" rotation="0 -10 0" scale="0.4 0.4 0.4" visible="false"></a-entity>
           
-          <a-entity id="weapon-P2" gltf-model="#axeModel" position="0.2 -0.6 -0.5" rotation="0 180 0" scale="0.5 0.5 0.5" visible="false" animation-mixer="clip: idle; loop: repeat;"></a-entity>
+          <a-entity id="weapon-P2" gltf-model="#axeModel" position="0.2 -0.6 -0.5" rotation="0 0 0" scale="0.5 0.5 0.5" visible="false" animation-mixer="clip: idle; loop: repeat;"></a-entity>
           
           <a-entity id="weapon-P3" gltf-model="#gunModel" position="0.3 -0.4 -0.6" rotation="0 -10 0" scale="0.4 0.4 0.4" visible="false"></a-entity>
 
@@ -170,7 +170,7 @@
               health = players[id].hp;
               document.getElementById('hp-text').innerText = health;
               if (health <= 0) { 
-                alert("ตายแล้ว! กำลังคืนชีพ..."); 
+                alert("กำลังคืนชีพ..."); 
                 update(ref(db, 'players/'+myRole), {hp:100}); 
               }
             } else {
@@ -250,5 +250,4 @@
       }
     </script>
   </body>
-                                                                    </html>
-                                                                    
+  </html>
