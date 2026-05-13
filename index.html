@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Island Survival - Official v1.1 (Big Avatar & PvP)</title>
+    <title>Island Survival v1.2 - Horizontal Lock & Fixed PvP</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@v6.1.1/dist/aframe-extras.min.js"></script>
@@ -18,19 +18,16 @@
       #ui-layer { position: absolute; top: 20px; left: 20px; z-index: 999; color: white; pointer-events: none; }
       #health-bar { width: 200px; height: 18px; background: rgba(51, 51, 51, 0.8); border: 2px solid white; margin-top: 5px; }
       #health-fill { width: 100%; height: 100%; background: #ff0000; transition: width 0.2s; }
-      #customize-btn { position: absolute; top: 20px; right: 20px; z-index: 1000; padding: 10px; border-radius: 12px; background: rgba(255,255,255,0.2); color: white; border: 2px solid white; }
       #controls-ui { position: absolute; bottom: 0; left: 0; width: 100%; height: 100%; z-index: 998; pointer-events: none; }
       #joystick-zone { position: absolute; bottom: 40px; left: 40px; width: 120px; height: 120px; pointer-events: auto; }
       .fire-btn { position: absolute; bottom: 50px; right: 40px; width: 110px; height: 110px; border-radius: 50%; background: rgba(255, 0, 0, 0.7); color: white; border: 5px solid #fff; pointer-events: auto; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: bold; }
-      #customize-menu { position: absolute; top: 80px; right: 20px; z-index: 1000; background: rgba(0,0,0,0.8); padding: 10px; border-radius: 10px; border: 2px solid #00ffcc; display: none; }
-      .skin-option { width: 60px; height: 60px; margin: 5px; border: 2px solid white; cursor: pointer; }
       .hidden { display: none !important; }
     </style>
   </head>
   <body>
     <div id="damage-flash"></div>
     <div id="main-menu">
-      <h1 style="color: #00ffcc;">เกาะมหาสนุก v1.1</h1>
+      <h1 style="color: #00ffcc;">เกาะมหาสนุก v1.2</h1>
       <div id="initial-menu">
         <button class="menu-btn" onclick="startGame('solo')">เล่นคนเดียว</button>
         <button class="menu-btn" style="background:#444; color:white; margin-top:15px;" onclick="showOnlineSetup()">ออนไลน์</button>
@@ -47,14 +44,6 @@
       <div id="my-id-display" style="font-size: 18px; color: gold; margin-bottom: 5px;"></div>
       <div style="font-weight: bold;">เลือด: <span id="hp-text">100</span></div>
       <div id="health-bar"><div id="health-fill"></div></div>
-    </div>
-
-    <button id="customize-btn" class="hidden" onclick="toggleCustomizeMenu()">👕 เปลี่ยนชุด</button>
-    <div id="customize-menu">
-       <img class="skin-option" src="jjs.png" onclick="setMySkin('#imgRed')">
-       <img class="skin-option" src="jjkl.png" onclick="setMySkin('#imgBlue')">
-       <img class="skin-option" src="The Herta.png" onclick="setMySkin('#imgHerta')">
-       <img class="skin-option" src="Sparcy.png" onclick="setMySkin('#imgSparcy')">
     </div>
 
     <div id="controls-ui" class="hidden">
@@ -75,18 +64,29 @@
       <a-entity id="island" gltf-model="#islandModel" position="0 -1.5 -30" scale="0.1 0.1 0.1"></a-entity>
 
       <a-entity id="rig" position="0 0 0">
-        <a-entity id="camera" camera position="0 1.6 0" look-controls="touchEnabled: true">
+        <a-entity id="camera" camera position="0 1.6 0" look-controls="touchEnabled: true; magicWindowTrackingEnabled: false; reverseMouseDrag: false;">
           <a-entity id="weapon" gltf-model="#gunModel" position="0.3 -0.4 -0.6" rotation="0 -10 0" scale="0.4 0.4 0.4" visible="false"></a-entity>
-          <a-entity id="crosshair" cursor position="0 0 -1" geometry="primitive: ring; radiusInner: 0.01; radiusOuter: 0.015" material="color: #00ff00; shader: flat" raycaster="objects: .targetable; far: 50"></a-entity>
+          <a-entity id="crosshair" cursor position="0 0 -1" geometry="primitive: ring; radiusInner: 0.01; radiusOuter: 0.015" material="color: #00ff00; shader: flat" raycaster="objects: .targetable; far: 100"></a-entity>
         </a-entity>
         <a-image id="my-avatar" src="#imgRed" width="4" height="4" position="0 2 0"></a-image>
       </a-entity>
 
-      <a-entity id="player-P1" class="targetable" visible="false" data-type="player" data-id="P1"><a-image src="#imgRed" width="4" height="4" position="0 2 0"></a-image><a-cone position="0 5 0" rotation="180 0 0" radius-bottom="0.3" height="0.6" color="orange"></a-cone></a-entity>
-      <a-entity id="player-P2" class="targetable" visible="false" data-type="player" data-id="P2"><a-image src="#imgRed" width="4" height="4" position="0 2 0"></a-image><a-cone position="0 5 0" rotation="180 0 0" radius-bottom="0.3" height="0.6" color="cyan"></a-cone></a-entity>
-      <a-entity id="player-P3" class="targetable" visible="false" data-type="player" data-id="P3"><a-image src="#imgRed" width="4" height="4" position="0 2 0"></a-image><a-cone position="0 5 0" rotation="180 0 0" radius-bottom="0.3" height="0.6" color="violet"></a-cone></a-entity>
+      <a-entity id="player-P1" class="targetable" visible="false" data-id="P1">
+        <a-image src="#imgRed" width="4" height="4" position="0 2 0"></a-image>
+        <a-cone position="0 5 0" rotation="180 0 0" radius-bottom="0.3" height="0.6" color="orange"></a-cone>
+        <a-box opacity="0" width="4" height="4" depth="1" position="0 2 0"></a-box> </a-entity>
 
-      <a-image id="bot-enemy" class="targetable" src="#imgRed" position="0 3 -20" width="6" height="6" visible="false" data-type="bot" data-hp="100"></a-image>
+      <a-entity id="player-P2" class="targetable" visible="false" data-id="P2">
+        <a-image src="#imgRed" width="4" height="4" position="0 2 0"></a-image>
+        <a-cone position="0 5 0" rotation="180 0 0" radius-bottom="0.3" height="0.6" color="cyan"></a-cone>
+        <a-box opacity="0" width="4" height="4" depth="1" position="0 2 0"></a-box> </a-entity>
+
+      <a-entity id="player-P3" class="targetable" visible="false" data-id="P3">
+        <a-image src="#imgRed" width="4" height="4" position="0 2 0"></a-image>
+        <a-cone position="0 5 0" rotation="180 0 0" radius-bottom="0.3" height="0.6" color="violet"></a-cone>
+        <a-box opacity="0" width="4" height="4" depth="1" position="0 2 0"></a-box> </a-entity>
+
+      <a-image id="bot-enemy" class="targetable" src="#imgRed" position="0 3 -20" width="6" height="6" visible="false" data-id="BOT" data-hp="100"></a-image>
     </a-scene>
 
     <script type="module">
@@ -100,6 +100,15 @@
       let health = 100;
       let myRole = "";
 
+      // ฟังก์ชันล็อคการแหงน (ล็อคแกน X ของกล้อง)
+      setInterval(() => {
+        const cam = document.getElementById('camera');
+        if (cam) {
+          let rot = cam.getAttribute('rotation');
+          if (rot.x !== 0) { cam.setAttribute('rotation', {x: 0, y: rot.y, z: 0}); }
+        }
+      }, 10);
+
       window.showOnlineSetup = function() {
         document.getElementById('initial-menu').classList.add('hidden');
         document.getElementById('online-setup').style.display = 'flex';
@@ -109,7 +118,6 @@
         document.getElementById('main-menu').classList.add('hidden');
         document.getElementById('controls-ui').classList.remove('hidden');
         document.getElementById('ui-layer').classList.remove('hidden');
-        document.getElementById('customize-btn').classList.remove('hidden');
         document.querySelector('#weapon').setAttribute('visible', 'true');
         if (mode === 'solo') { document.getElementById('bot-enemy').setAttribute('visible', 'true'); } 
         else { 
@@ -121,21 +129,18 @@
       }
 
       function startFirebaseSync() {
-        // อัปเดตข้อมูลเรา และเช็คเลือดตัวเอง
         setInterval(() => {
           const rig = document.getElementById('rig');
           update(ref(db, 'players/' + myRole), {
             p: rig.getAttribute('position'),
             r: rig.getAttribute('rotation'),
-            s: document.getElementById('my-avatar').getAttribute('src'),
             hp: health
           });
         }, 50);
 
-        // ฟังคำสั่งเลือดลด (เมื่อโดนคนอื่นยิง)
         onValue(ref(db, 'players/' + myRole + '/hp'), (snap) => {
           let serverHp = snap.val();
-          if(serverHp < health) { 
+          if(serverHp !== null && serverHp < health) { 
             health = serverHp; 
             updateUI(); 
             document.getElementById('damage-flash').style.display = 'block';
@@ -143,24 +148,21 @@
           }
         });
 
-        // ดึงตำแหน่งเพื่อน
         ["P1", "P2", "P3"].forEach(id => {
           if(id !== myRole) {
             onValue(ref(db, 'players/' + id), (snap) => {
               const data = snap.val();
-              if(data && data.hp > 0) {
+              if(data) {
                 const ent = document.getElementById('player-' + id);
-                ent.setAttribute('visible', 'true');
+                ent.setAttribute('visible', data.hp > 0);
                 ent.setAttribute('position', data.p);
                 ent.setAttribute('rotation', data.r);
-                ent.querySelector('a-image').setAttribute('src', data.s);
               }
             });
           }
         });
       }
 
-      // ระบบยิง (ยิงได้ทั้ง Bot และ เพื่อน)
       document.getElementById('shoot-btn').addEventListener('touchstart', (e) => {
         e.preventDefault();
         const weapon = document.querySelector('#weapon');
@@ -169,35 +171,34 @@
 
         const raycaster = document.querySelector('#crosshair').components.raycaster;
         const intersections = raycaster.intersections;
+        
         if (intersections.length > 0) {
           const targetEl = intersections[0].object.el;
+          const targetId = targetEl.dataset.id || targetEl.parentElement.dataset.id;
           
-          // ถ้ายิงโดนบอท
-          if (targetEl.dataset.type === 'bot') {
+          if (targetId === 'BOT') {
             let bHp = parseInt(targetEl.getAttribute('data-hp')) - 25;
             targetEl.setAttribute('data-hp', bHp);
             if (bHp <= 0) { targetEl.setAttribute('visible', 'false'); setTimeout(() => { targetEl.setAttribute('visible', 'true'); targetEl.setAttribute('data-hp', 100); }, 3000); }
-          }
-          // ถ้ายิงโดนเพื่อน (PvP!)
-          if (targetEl.dataset.type === 'player') {
-            const targetId = targetEl.dataset.id;
+          } else if (targetId) {
+            // ยิงโดนคน
             onValue(ref(db, 'players/' + targetId + '/hp'), (snap) => {
-              let currentTargetHp = snap.val() || 100;
-              update(ref(db, 'players/' + targetId), { hp: currentTargetHp - 10 });
+              let currentHp = snap.val() || 100;
+              update(ref(db, 'players/' + targetId), { hp: currentHp - 20 });
             }, { onlyOnce: true });
           }
         }
       });
 
-      window.setMySkin = function(skinSrc) {
-        document.getElementById('my-avatar').setAttribute('src', skinSrc);
-        document.getElementById('customize-menu').style.display = 'none';
-      }
-
       function updateUI() {
         document.getElementById('hp-text').innerText = health;
         document.getElementById('health-fill').style.width = health + "%";
-        if(health <= 0) { alert("คุณตายแล้ว! กำลังเกิดใหม่..."); health = 100; updateUI(); }
+        if(health <= 0) { 
+           alert("คุณถูกกำจัด! กำลังเกิดใหม่..."); 
+           health = 100; 
+           update(ref(db, 'players/' + myRole), { hp: 100 });
+           updateUI(); 
+        }
       }
 
       function initJoystick() {
@@ -215,11 +216,7 @@
           rig.setAttribute('position', pos);
         });
       }
-      window.toggleCustomizeMenu = function() {
-        const m = document.getElementById('customize-menu');
-        m.style.display = (m.style.display === 'block') ? 'none' : 'block';
-      }
     </script>
   </body>
-      </html>
-        
+          </html>
+  
