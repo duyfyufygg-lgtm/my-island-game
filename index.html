@@ -2,9 +2,10 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Island Survival v1.6 - Skin & Crosshair Back!</title>
+    <title>Island Survival v1.8 - Axe Melee & Animations</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.2.0/dist/aframe-extras.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.9.0/nipplejs.min.js"></script>
 
     <style>
@@ -26,7 +27,7 @@
   <body>
 
     <div id="main-menu">
-      <h1 style="color: #00ffcc;">เกาะมหาสนุก v1.6</h1>
+      <h1 style="color: #00ffcc;">เกาะมหาสนุก v1.8</h1>
       <p>1. เลือกสกิน</p>
       <div class="skin-container">
         <div class="skin-btn active" onclick="selectSkin('#imgRed', this)"><img src="jjs.png"></div>
@@ -36,7 +37,7 @@
       </div>
       <p>2. เลือกเครื่องเล่น</p>
       <button class="role-btn" onclick="startGame('P1')">มือปืน (P1)</button>
-      <button class="role-btn" onclick="startGame('P2')">นักดาบ(P2)</button>
+      <button class="role-btn" onclick="startGame('P2')">มือขวาน (P2 - ประชิด)</button>
       <button class="role-btn" onclick="startGame('P3')">แท่งน้ำ(P3)</button>
     </div>
 
@@ -49,13 +50,13 @@
 
     <div id="controls-ui" class="hidden">
       <div id="joystick-zone"></div>
-      <div id="shoot-btn" class="fire-btn">ยิง!!</div>
+      <div id="shoot-btn" class="fire-btn">โจมตี!!</div>
     </div>
 
     <a-scene vr-mode-ui="enabled: false" ar-mode-ui="enabled: false" renderer="colorManagement: true;">
       <a-assets>
         <a-asset-item id="gunModel" src="asd.glb"></a-asset-item>
-        <a-asset-item id="islandModel" src="city.glb"></a-asset-item>
+        <a-asset-item id="axeModel" src="fps.glb"></a-asset-item> <a-asset-item id="islandModel" src="city.glb"></a-asset-item>
         <img id="imgRed" src="jjs.png">
         <img id="imgBlue" src="jjkl.png">
         <img id="imgHerta" src="The Herta.png">
@@ -68,24 +69,31 @@
 
       <a-entity id="rig" position="0 0 0">
         <a-entity id="camera" camera position="0 1.6 0">
-          <a-entity id="weapon" gltf-model="#gunModel" position="0.3 -0.4 -0.6" rotation="0 -10 0" scale="0.4 0.4 0.4"></a-entity>
+          
+          <a-entity id="weapon-P1" gltf-model="#gunModel" position="0.3 -0.4 -0.6" rotation="0 -10 0" scale="0.4 0.4 0.4" visible="false"></a-entity>
+          
+          <a-entity id="weapon-P2" gltf-model="#axeModel" position="0.2 -0.6 -0.5" rotation="0 180 0" scale="0.5 0.5 0.5" visible="false" animation-mixer="clip: idle; loop: repeat;"></a-entity>
+          
+          <a-entity id="weapon-P3" gltf-model="#gunModel" position="0.3 -0.4 -0.6" rotation="0 -10 0" scale="0.4 0.4 0.4" visible="false"></a-entity>
+
           <a-entity id="cursor-visual" position="0 0 -1" geometry="primitive: ring; radiusInner: 0.012; radiusOuter: 0.018" material="color: #00ff00; shader: flat; opacity: 0.8"></a-entity>
         </a-entity>
         <a-image id="my-skin-display" src="#imgRed" width="4" height="4" position="0 2 0"></a-image>
       </a-entity>
 
       <a-entity id="player-P1" visible="false">
-        <a-image id="img-P1" src="#imgRed" width="4" height="4" position="0 2 0"></a-image>
+        <a-image src="#imgRed" width="4" height="4" position="0 2 0"></a-image>
         <a-box class="targetable" data-id="P1" opacity="0" width="4" height="5" depth="1" position="0 2 0"></a-box>
       </a-entity>
       <a-entity id="player-P2" visible="false">
-        <a-image id="img-P2" src="#imgRed" width="4" height="4" position="0 2 0"></a-image>
+        <a-image src="#imgRed" width="4" height="4" position="0 2 0"></a-image>
         <a-box class="targetable" data-id="P2" opacity="0" width="4" height="5" depth="1" position="0 2 0"></a-box>
       </a-entity>
       <a-entity id="player-P3" visible="false">
-        <a-image id="img-P3" src="#imgRed" width="4" height="4" position="0 2 0"></a-image>
+        <a-image src="#imgRed" width="4" height="4" position="0 2 0"></a-image>
         <a-box class="targetable" data-id="P3" opacity="0" width="4" height="5" depth="1" position="0 2 0"></a-box>
       </a-entity>
+
     </a-scene>
 
     <script type="module">
@@ -100,6 +108,7 @@
       let myRole = "";
       let mySkin = "#imgRed";
       let yaw = 0;
+      let attackDistance = 100; // ระยะโจมตีปกติ
 
       // ระบบเลือกสกิน
       window.selectSkin = function(skinId, btn) {
@@ -128,8 +137,19 @@
         document.getElementById('ui-layer').classList.remove('hidden');
         document.getElementById('touch-area').classList.remove('hidden');
         document.getElementById('controls-ui').classList.remove('hidden');
-        document.getElementById('my-id-text').innerText = "คุณคือ: " + role;
+        document.getElementById('my-id-text').innerText = "คุณคือ: " + (role === 'P2' ? 'มือขวาน' : 'มือปืน');
         
+        // --- ระบบโชว์อาวุธตามอาชีพ ---
+        document.querySelectorAll('[id^="weapon-"]').forEach(w => w.setAttribute('visible', false));
+        const activeWeapon = document.getElementById('weapon-' + role);
+        if(activeWeapon) {
+          activeWeapon.setAttribute('visible', true);
+          window.currentWeapon = activeWeapon;
+          
+          // ถ้าเป็นมือขวาน (P2) ปรับระยะโจมตีให้สั้นลง
+          if(role === 'P2') attackDistance = 4; // ระยะประชิด
+        }
+
         // ส่งตำแหน่งและสกินเข้า Firebase
         setInterval(() => {
           const rig = document.getElementById('rig');
@@ -142,7 +162,7 @@
           });
         }, 50);
 
-        // ดึงข้อมูลเพื่อนมาแสดง (รวมถึงสกินของเพื่อน)
+        // ดึงข้อมูลเพื่อนมาแสดง
         onValue(ref(db, 'players'), (snap) => {
           const players = snap.val();
           for (let id in players) {
@@ -155,12 +175,11 @@
               }
             } else {
               const ent = document.getElementById('player-' + id);
-              const img = document.getElementById('img-' + id);
               if (ent) {
                 ent.setAttribute('visible', players[id].hp > 0);
                 ent.setAttribute('position', players[id].p);
                 ent.setAttribute('rotation', players[id].r);
-                if(players[id].skin) img.setAttribute('src', players[id].skin);
+                ent.querySelector('a-image').setAttribute('src', players[id].skin);
               }
             }
           }
@@ -168,15 +187,31 @@
         initJoystick();
       }
 
-      // ระบบยิงโดยใช้เป้ากลางจอ
+      // ระบบโจมตี
       document.getElementById('shoot-btn').addEventListener('touchstart', (e) => {
         e.preventDefault();
-        const weapon = document.getElementById('weapon');
-        weapon.setAttribute('position', '0.3 -0.4 -0.4');
-        setTimeout(() => weapon.setAttribute('position', '0.3 -0.4 -0.6'), 60);
+        if(!window.currentWeapon) return;
 
+        // --- รันอนิเมชั่นโจมตี ---
+        if(myRole === 'P2') {
+          // ถ้าเป็นขวาน ให้เล่นอนิเมชั่นฟัน (attack)
+          window.currentWeapon.setAttribute('animation-mixer', 'clip: attack; loop: once; crossFadeDuration: 0.1;');
+          // กลับมาท่า idle เมื่อจบนิเมชั่น (ประมาณ 0.5 วินาที หรือปรับตามไฟล์จริง)
+          setTimeout(() => {
+            window.currentWeapon.setAttribute('animation-mixer', 'clip: idle; loop: repeat; crossFadeDuration: 0.2;');
+          }, 500);
+        } else {
+          // ถ้าเป็นปืน ให้ทำท่า recoil เดิม
+          window.currentWeapon.setAttribute('position', '0.3 -0.4 -0.4');
+          setTimeout(() => window.currentWeapon.setAttribute('position', '0.3 -0.4 -0.6'), 60);
+        }
+
+        // --- เช็ค Raycast การยิง (ใช้ระยะ attackDistance) ---
         const cam = document.getElementById('camera');
         const raycaster = new THREE.Raycaster();
+        // กำหนดระยะ Raycast สูงสุด
+        raycaster.far = attackDistance;
+
         const direction = new THREE.Vector3(0, 0, -1);
         direction.applyQuaternion(cam.object3D.quaternion);
         raycaster.set(cam.object3D.getWorldPosition(new THREE.Vector3()), direction);
@@ -190,7 +225,9 @@
           if (hitId !== myRole) {
             onValue(ref(db, `players/${hitId}/hp`), snap => {
               let currentHp = snap.val() || 100;
-              update(ref(db, `players/${hitId}`), { hp: currentHp - 20 });
+              // ดาเมจขวานแรงกว่าปืนเล็กน้อย
+              const damage = (myRole === 'P2' ? 25 : 20);
+              update(ref(db, `players/${hitId}`), { hp: currentHp - damage });
             }, { onlyOnce: true });
           }
         }
@@ -200,16 +237,18 @@
         const manager = nipplejs.create({ zone: document.getElementById('joystick-zone'), mode: 'static', position: {left: '70px', bottom: '70px'}, color: 'white' });
         manager.on('move', (evt, data) => {
           const rig = document.querySelector('#rig');
-          const rotY = yaw * Math.PI / 180;
+          const cam = document.querySelector('#camera');
+          let rot = cam.getAttribute('rotation').y * Math.PI / 180;
           let pos = rig.getAttribute('position');
-          let speed = 0.3;
+          let speed = (myRole === 'P2' ? 0.35 : 0.3); // นักดาบวิ่งเร็วกว่านิดหน่อย
           let moveF = Math.sin(data.angle.radian) * speed;
           let moveS = Math.cos(data.angle.radian) * speed;
-          pos.x -= (Math.sin(rotY) * moveF + Math.cos(rotY) * moveS);
-          pos.z -= (Math.cos(rotY) * moveF - Math.sin(rotY) * moveS);
+          pos.x -= (Math.sin(rot) * moveF + Math.cos(rot) * moveS);
+          pos.z -= (Math.cos(rot) * moveF - Math.sin(rot) * moveS);
           rig.setAttribute('position', pos);
         });
       }
     </script>
   </body>
-</html>
+                                                                    </html>
+                                                                    
