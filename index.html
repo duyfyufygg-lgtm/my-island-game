@@ -1,68 +1,85 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Island Survival: One Server Edition</title>
+    <title>Island Survival - The Herta Edition</title>
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@v6.1.1/dist/aframe-extras.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.9.1/nipplejs.min.js"></script>
     <script type="importmap">
         { "imports": { "firebase/app": "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js", "firebase/database": "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js" } }
     </script>
     <style>
-        body { margin: 0; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        #ui { position: absolute; top: 15px; left: 15px; z-index: 100; color: white; text-shadow: 2px 2px #000; pointer-events: none; }
-        .menu { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.9); padding: 30px; border-radius: 20px; text-align: center; color: white; z-index: 200; border: 3px solid #00ffcc; box-shadow: 0 0 30px rgba(0,255,204,0.5); }
+        body { margin: 0; overflow: hidden; font-family: sans-serif; background: #000; }
+        #ui { position: absolute; top: 10px; left: 10px; z-index: 100; color: white; text-shadow: 2px 2px black; pointer-events: none; }
+        .menu { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.9); padding: 25px; border-radius: 15px; text-align: center; color: white; z-index: 200; border: 2px solid #00ffcc; }
         .hidden { display: none !important; }
-        button { padding: 12px 25px; margin: 8px; cursor: pointer; border-radius: 8px; border: none; font-weight: bold; transition: 0.2s; }
-        button:hover { transform: scale(1.1); }
-        .btn-atk { position: absolute; bottom: 30px; right: 30px; width: 90px; height: 90px; border-radius: 50%; background: radial-gradient(#ff0000, #990000); color: white; z-index: 100; border: 5px solid white; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
-        #joy { position: absolute; bottom: 30px; left: 30px; width: 130px; height: 130px; z-index: 100; }
-        #hacker-fx { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(150, 0, 255, 0.3); pointer-events: none; z-index: 50; display: none; border: 8px solid purple; animation: flash 0.15s infinite; }
-        @keyframes flash { 0%, 100% { opacity: 0.4; } 50% { opacity: 0.8; } }
+        button { padding: 12px 24px; margin: 8px; cursor: pointer; font-weight: bold; border-radius: 8px; border: none; transition: 0.2s; }
+        button:hover { transform: scale(1.05); opacity: 0.9; }
+        .btn-atk { position: absolute; bottom: 20px; right: 20px; width: 90px; height: 90px; border-radius: 50%; background: radial-gradient(#ff0000, #990000); color: white; z-index: 100; border: 4px solid white; }
+        #joy { position: absolute; bottom: 20px; left: 20px; width: 130px; height: 130px; z-index: 100; }
+        #hacker-fx { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(150, 0, 255, 0.4); pointer-events: none; z-index: 50; display: none; border: 10px solid purple; animation: flash 0.1s infinite; }
+        @keyframes flash { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.7; } }
     </style>
 </head>
 <body>
 
     <div id="ui">
-        <h1 id="hp-display" style="font-size: 40px; margin: 0;">HP: --</h1>
-        <p id="status-text" style="color: #00ffcc;">Status: Connecting to Global Server...</p>
+        <h1 id="hp-display">HP: --</h1>
+        <p id="status">Connecting...</p>
     </div>
 
     <div id="start-menu" class="menu">
-        <h2 style="color: #00ffcc; margin-top: 0;">ISLAND SURVIVAL v4.0</h2>
-        <p>ยินดีต้อนรับสู่เซิร์ฟเวอร์หลัก เลือกสายเพื่อเข้าสู่เกาะ:</p>
-        <button style="background: #a349a4; color: white;" onclick="joinGame('Speed')">สายไว (Silver Wolf)</button>
-        <button style="background: #ed1c24; color: white;" onclick="joinGame('Atk')">สายตี (T-Rex)</button>
-        <button style="background: #ff7f27; color: white;" onclick="joinGame('Tank')">สายถึก (Trash Can)</button>
+        <h2 style="color:#00ffcc;">THE HERTA SURVIVAL</h2>
+        <p>เลือกตัวละครที่ต้องการ:</p>
+        <button style="background:#a349a4; color:white;" onclick="joinGame('Speed')">Speed (Silver Wolf)</button>
+        <button style="background:#ed1c24; color:white;" onclick="joinGame('Atk')">Atk (T-Rex)</button>
+        <button style="background:#ff7f27; color:white;" onclick="joinGame('Tank')">Tank (ถังขยะ)</button>
     </div>
+
+    <div onclick="openAdmin()" style="position:absolute; bottom:0; right:0; width:30px; height:30px; opacity:0.1; z-index:10000; cursor:pointer;">.</div>
 
     <div id="admin-login" class="menu hidden">
-        <h3 style="color: #ff0000;">RESTRICTED AREA</h3>
-        <input type="password" id="admin-pass" placeholder="Enter Admin Password" style="padding:12px; width: 80%; border-radius:5px; margin-bottom:15px;">
-        <br>
-        <button style="background:#00ffcc; color:black; width: 100%;" onclick="checkAdmin()">VERIFY IDENTITY</button>
-        <p style="cursor:pointer; font-size:12px; margin-top:10px;" onclick="closeAdmin()">Go Back</p>
+        <h3>GOD ACCESS</h3>
+        <input type="password" id="admin-pass" placeholder="Password...">
+        <button onclick="checkAdmin()" style="background:#00ffcc;">LOGIN</button>
+        <button onclick="closeAdmin()">X</button>
     </div>
 
-    <div id="admin-panel" class="hidden" style="position:absolute; top:20px; right:20px; background:rgba(0,0,0,0.9); padding:20px; border:2px solid #00ffcc; z-index:5000; border-radius:15px; color:white; width: 220px;">
-        <h4 style="margin:0 0 15px 0; color:#00ffcc; text-align:center;">SERVER MANAGER</h4>
-        <button id="ghost-btn" onclick="toggleGhost()" style="width:100%; margin-bottom:10px; background:#333; color:white; border:1px solid #00ffcc;">GHOST MODE: OFF</button>
-        <button onclick="chaosHack()" style="width:100%; background:linear-gradient(to bottom, #9600ff, #4b0082); color:white; height: 50px;">CHAOS HACK (ALL)</button>
-        <button onclick="closeAdminPanel()" style="width:100%; background:none; color:#666; border:none; margin-top:10px; font-size:12px;">Hide Menu</button>
+    <div id="admin-panel" class="hidden" style="position:absolute; top:10px; right:10px; background:rgba(0,0,0,0.9); padding:15px; border:2px solid #00ffcc; z-index:5000; color:white; border-radius:10px;">
+        <button onclick="toggleGhost()" style="width:100%; margin-bottom:5px;">โหมดล่องหน (Ghost)</button>
+        <button onclick="chaosHack()" style="width:100%; background:purple; color:white;">HACK ALL</button>
     </div>
 
     <div id="hacker-fx"></div>
     <div id="joy"></div>
     <button id="atk-btn" class="btn-atk hidden" onclick="attack()">ATK</button>
     
-    <div onclick="openAdmin()" style="position:absolute; bottom:0; right:0; width:20px; height:20px; opacity:0.05; z-index:10000; cursor:pointer; background: white;"></div>
+    <a-scene shadow="type: pcfsoft">
+        <a-assets>
+            <a-asset-item id="city-m" src="city.glb"></a-asset-item>
+            <a-asset-item id="trex-m" src="T-Rex.glb"></a-asset-item>
+            <a-asset-item id="bin-m" src="bin.glb"></a-asset-item>
+            <a-asset-item id="asd-m" src="asd.glb"></a-asset-item>
+            <a-asset-item id="fae-m" src="fae.glb"></a-asset-item>
+            <a-asset-item id="fps-m" src="fps.glb"></a-asset-item>
+            
+            <img id="herta-img" src="The Herta.png">
+            <img id="the-img" src="the.png">
+            <img id="shop-img" src="Fetchingshop12.png">
+            <img id="jjs-img" src="jjs.png">
+            <img id="sparcy-img" src="Sparcy.png">
+            <img id="jjkl-img" src="jjkl.png">
+            <img id="s67-img" src="67.png">
+        </a-assets>
 
-    <a-scene fog="type: linear; color: #87CEEB; far: 50; near: 0">
-        <a-sky color="#87CEEB"></a-sky>
-        <a-plane position="0 0 0" rotation="-90 0 0" width="200" height="200" color="#4CAF50"></a-plane>
+        <a-sky src="#the-img"></a-sky> <a-entity gltf-model="#city-m" position="0 -1 0"></a-entity>
         
+        <a-image src="#herta-img" position="0 5 -10" scale="5 5 5"></a-image>
+        <a-image src="#shop-img" position="5 3 -5" scale="2 2 2"></a-image>
+
         <a-entity id="camera-rig" position="0 1.6 0">
             <a-camera id="cam" look-controls="pointerLockEnabled: false">
-                <a-cursor id="cursor" color="red" scale="2 2 2"></a-cursor>
+                <a-cursor id="cursor" color="cyan"></a-cursor>
             </a-camera>
         </a-entity>
 
@@ -73,11 +90,12 @@
         import { initializeApp } from "firebase/app";
         import { getDatabase, ref, set, onValue, update, onDisconnect, get } from "firebase/database";
 
-        const firebaseConfig = { databaseURL: "https://duyfyufygg-lgtm.github.io/my-island-game/" }; // ใช้ลิงก์เดิมของอาจารย์
+        // *** อาจารย์ใช้ URL เดิมของอาจารย์ตรงนี้นะครับ ***
+        const firebaseConfig = { databaseURL: "https://duyfyufygg-lgtm.github.io/my-island-game/" };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        let myId = "UID-" + Math.random().toString(36).substr(2, 9);
+        let myId = "HERTA-" + Math.floor(Math.random() * 99999);
         let myRole = "";
         let hp = 100;
         let isGhost = false;
@@ -88,56 +106,44 @@
             hp = (role === 'Tank') ? 300 : 100;
             document.getElementById('start-menu').classList.add('hidden');
             document.getElementById('atk-btn').classList.remove('hidden');
-            document.getElementById('hp-display').innerText = "HP: " + hp;
-            document.getElementById('status-text').innerText = "Status: Online | Role: " + role;
-            
-            set(ref(db, 'global_server/' + myId), {
-                id: myId, role: role, x: 0, y: 1.6, z: 0, hp: hp,
-                hacked: false, isGhost: false, ry: 0
+            document.getElementById('status').innerText = "Status: ONLINE";
+
+            set(ref(db, 'server_herta/' + myId), {
+                id: myId, role, x: 0, y: 1.6, z: 0, hp,
+                hacked: false, isGhost: false, ry: 0,
+                // ผูกไฟล์โมเดลกับสายที่เลือก
+                model: (role === 'Tank' ? '#bin-m' : (role === 'Atk' ? '#trex-m' : '#asd-m'))
             });
-            onDisconnect(ref(db, 'global_server/' + myId)).remove();
+            onDisconnect(ref(db, 'server_herta/' + myId)).remove();
         };
 
-        const manager = nipplejs.create({ zone: document.getElementById('joy'), mode: 'static', position: { left: '80px', bottom: '80px' }, color: 'cyan' });
-        manager.on('move', (evt, data) => {
-            const angle = data.angle.radian;
-            const force = data.force > 1 ? 1 : data.force;
-            moveData.x = Math.cos(angle) * force * 0.25;
-            moveData.z = -Math.sin(angle) * force * 0.25;
+        const manager = nipplejs.create({ zone: document.getElementById('joy'), mode: 'static', position: { left: '75px', bottom: '75px' }, color: 'cyan' });
+        manager.on('move', (e, d) => {
+            moveData.x = Math.cos(d.angle.radian) * d.force * 0.25;
+            moveData.z = -Math.sin(d.angle.radian) * d.force * 0.25;
         });
-        manager.on('end', () => { moveData = { x: 0, z: 0 }; });
+        manager.on('end', () => moveData = { x: 0, z: 0 });
 
         setInterval(() => {
             if (!myRole) return;
-            const camRig = document.getElementById('camera-rig');
+            const rig = document.getElementById('camera-rig');
             const cam = document.getElementById('cam');
-            let rotation = cam.getAttribute('rotation').y * (Math.PI / 180);
-            let worldX = moveData.x * Math.cos(rotation) + moveData.z * Math.sin(rotation);
-            let worldZ = -moveData.x * Math.sin(rotation) + moveData.z * Math.cos(rotation);
-            
-            camRig.object3D.position.x += worldX;
-            camRig.object3D.position.z += worldZ;
-
-            update(ref(db, 'global_server/' + myId), {
-                x: camRig.object3D.position.x,
-                z: camRig.object3D.position.z,
-                ry: cam.getAttribute('rotation').y
-            });
+            let ry = cam.getAttribute('rotation').y * (Math.PI / 180);
+            rig.object3D.position.x += moveData.x * Math.cos(ry) + moveData.z * Math.sin(ry);
+            rig.object3D.position.z += -moveData.x * Math.sin(ry) + moveData.z * Math.cos(ry);
+            update(ref(db, 'server_herta/' + myId), { x: rig.object3D.position.x, z: rig.object3D.position.z, ry: cam.getAttribute('rotation').y });
         }, 30);
 
-        onValue(ref(db, 'global_server'), (snapshot) => {
+        onValue(ref(db, 'server_herta'), (snapshot) => {
             const data = snapshot.val();
             const container = document.getElementById('players-container');
             if (!data) return;
 
             if (data[myId]) {
                 hp = data[myId].hp;
-                document.getElementById('hp-display').innerText = isGhost ? "HP: GOD" : "HP: " + hp;
+                document.getElementById('hp-display').innerText = isGhost ? "HP: ∞ (GOD)" : "HP: " + hp;
                 document.getElementById('hacker-fx').style.display = data[myId].hacked ? 'block' : 'none';
-                if (hp <= 0 && !isGhost) { 
-                    alert("Game Over! คุณถูกกำจัด"); 
-                    location.reload(); 
-                }
+                if (hp <= 0 && !isGhost) { alert("You Died!"); location.reload(); }
             }
 
             Object.keys(data).forEach(id => {
@@ -145,65 +151,57 @@
                 let p = data[id];
                 let el = document.getElementById(id);
                 if (!el) {
-                    el = document.createElement('a-box');
+                    el = document.createElement('a-entity');
                     el.setAttribute('id', id);
-                    el.setAttribute('width', 0.9); el.setAttribute('height', 1.8);
+                    el.setAttribute('gltf-model', p.model);
+                    el.setAttribute('scale', p.role === 'Atk' ? '1.5 1.5 1.5' : '1 1 1');
                     container.appendChild(el);
+                    
                     let txt = document.createElement('a-text');
                     txt.setAttribute('value', p.role); txt.setAttribute('align', 'center');
-                    txt.setAttribute('position', '0 1.3 0'); txt.setAttribute('color', 'white');
-                    txt.setAttribute('width', 4); el.appendChild(txt);
+                    txt.setAttribute('position', '0 2.5 0'); txt.setAttribute('color', '#00ffcc');
+                    el.appendChild(txt);
                 }
                 el.setAttribute('visible', !p.isGhost && p.hp > 0);
-                el.setAttribute('position', `${p.x} ${p.y} ${p.z}`);
+                el.setAttribute('position', `${p.x} 0 ${p.z}`);
                 el.setAttribute('rotation', `0 ${p.ry} 0`);
-                el.setAttribute('color', p.role === 'Tank' ? '#ff7f27' : (p.role === 'Speed' ? '#a349a4' : '#ed1c24'));
             });
         });
 
         window.attack = () => {
-            const intersection = document.querySelector('a-cursor').components.raycaster.intersections[0];
-            if (intersection && intersection.object.el.id) {
-                const targetId = intersection.object.el.id;
-                get(ref(db, `global_server/${targetId}`)).then(snap => {
-                    if (snap.exists()) {
-                        const t = snap.val();
-                        let dmg = (myRole === 'Atk') ? 25 : 8;
-                        update(ref(db, `global_server/${targetId}`), { 
-                            hp: t.hp - dmg,
-                            hacked: (myRole === 'Speed' ? true : t.hacked)
-                        });
+            const inter = document.querySelector('a-cursor').components.raycaster.intersections[0];
+            if (inter && inter.object.el.id) {
+                const tid = inter.object.el.id;
+                get(ref(db, `server_herta/${tid}`)).then(s => {
+                    if (s.exists()) {
+                        let dmg = (myRole === 'Atk') ? 30 : 12;
+                        update(ref(db, `server_herta/${tid}`), { hp: s.val().hp - dmg });
                     }
                 });
             }
         };
 
-        // ADMIN LOGIC
+        // --- ADMIN LOGIC ---
         window.openAdmin = () => document.getElementById('admin-login').classList.remove('hidden');
         window.closeAdmin = () => document.getElementById('admin-login').classList.add('hidden');
         window.checkAdmin = () => {
             if (document.getElementById('admin-pass').value === 'the-herta-game') {
                 document.getElementById('admin-login').classList.add('hidden');
                 document.getElementById('admin-panel').classList.remove('hidden');
-            } else { alert('ACCESS DENIED!'); }
+            }
         };
         window.toggleGhost = () => {
             isGhost = !isGhost;
-            update(ref(db, `global_server/${myId}`), { isGhost: isGhost, hp: 999999 });
-            document.getElementById('ghost-btn').innerText = isGhost ? "GHOST: ON" : "GHOST: OFF";
-            document.getElementById('ghost-btn').style.background = isGhost ? "#00ffcc" : "#333";
+            update(ref(db, `server_herta/${myId}`), { isGhost: isGhost, hp: 999999 });
         };
         window.chaosHack = () => {
-            get(ref(db, 'global_server')).then(snap => {
-                const players = snap.val();
-                Object.keys(players).forEach(id => {
-                    if (id !== myId) update(ref(db, `global_server/${id}`), { hacked: true, hp: 5 });
+            get(ref(db, 'server_herta')).then(s => {
+                Object.keys(s.val()).forEach(id => {
+                    if(id !== myId) update(ref(db, `server_herta/${id}`), { hacked: true, hp: 1 });
                 });
             });
-            alert('SYSTEM OVERRIDE: ALL USERS HACKED');
         };
-        window.closeAdminPanel = () => document.getElementById('admin-panel').classList.add('hidden');
     </script>
 </body>
-                                                                                                                                                                        </html>
-  
+    </html>
+        
