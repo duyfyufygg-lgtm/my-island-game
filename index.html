@@ -2,33 +2,31 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Island Survival v3.3.5 - High Speed Loading</title>
+    <title>Island Survival v3.4.0 - Rotation Restored</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.2.0/dist/aframe-extras.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.9.0/nipplejs.min.js"></script>
 
     <style>
-      body { margin: 0; overflow: hidden; background: #000; font-family: sans-serif; }
-      
-      /* เอฟเฟกต์หน้าจอโดนแฮ็ก & เหม็น */
+      body { margin: 0; overflow: hidden; background: #000; font-family: sans-serif; touch-action: none; }
       #stink-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: radial-gradient(circle, rgba(100,255,0,0) 30%, rgba(50,100,0,0.6) 100%); pointer-events:none; z-index:2000; display:none; animation: pulse 1.5s infinite alternate; }
       #hack-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: repeating-linear-gradient(0deg, rgba(150,0,255,0.15) 0px, rgba(150,0,255,0.15) 2px, transparent 3px); pointer-events:none; z-index:2001; display:none; animation: glitch 0.2s infinite; }
       @keyframes pulse { from {opacity: 0.4;} to {opacity: 0.8;} }
       @keyframes glitch { 0% {transform: translate(0);} 50% {transform: translate(3px,-2px); filter: contrast(1.5);} 100% {transform: translate(0);} }
 
-      #main-menu, #tank-menu { position: absolute; top:0; left:0; width:100%; height:100%; display:flex; flex-direction:column; justify-content:center; align-items:center; background:#111; z-index:1000; color:white; }
-      .skin-container { display:flex; gap:10px; margin:15px 0; flex-wrap:wrap; justify-content:center; }
+      #main-menu, #tank-menu { position: absolute; top:0; left:0; width:100%; height:100%; display:flex; flex-direction:column; justify-content:center; align-items:center; background:#111; z-index:1000; color:white; text-align: center; }
+      .skin-container { display:flex; gap:10px; margin:15px 0; flex-wrap:wrap; justify-content:center; max-width: 90%; }
       .skin-btn { width:60px; height:60px; border:2px solid #fff; border-radius:10px; cursor:pointer; overflow:hidden; }
-      .skin-btn.active { border-color:#00ffcc; transform: scale(1.1); }
-      .tank-option-btn { width:80px; height:80px; border:2px solid #555; border-radius:12px; background:#222; cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; }
-      .tank-option-btn.selected { border-color:#ff9900; background:#333; }
+      .skin-btn.active { border-color:#00ffcc; box-shadow: 0 0 10px #00ffcc; transform: scale(1.1); }
+      .tank-option-btn { width:80px; height:80px; border:2px solid #555; border-radius:12px; background:#222; cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; font-size: 12px; }
+      .tank-option-btn.selected { border-color:#ff9900; background:#444; }
       .role-btn { padding:12px; margin:5px; width:220px; border-radius:10px; border:2px solid #fff; background:none; color:#fff; font-weight:bold; cursor:pointer; }
-      .tank-select-btn { padding:18px; width:260px; background:#ff9900; border:none; border-radius:15px; font-size:20px; font-weight:bold; cursor:pointer; }
-      #ui-layer { position:absolute; top:15px; left:15px; z-index:999; color:#fff; pointer-events:none; }
+      .tank-select-btn { padding:18px; width:260px; background:#ff9900; border:none; border-radius:15px; font-size:20px; font-weight:bold; cursor:pointer; color: black; }
+      #ui-layer { position:absolute; top:15px; left:15px; z-index:999; color:#fff; pointer-events:none; text-shadow: 1px 1px #000; }
       #controls-ui { position:absolute; bottom:0; left:0; width:100%; height:100%; z-index:998; pointer-events:none; }
       #joystick-zone { position:absolute; bottom:40px; left:40px; width:120px; height:120px; pointer-events:auto; }
-      .fire-btn { position:absolute; bottom:50px; right:40px; width:90px; height:90px; border-radius:50%; background:#ff4444; color:white; border:4px solid #fff; pointer-events:auto; display:flex; align-items:center; justify-content:center; font-weight:bold; }
+      .fire-btn { position:absolute; bottom:50px; right:40px; width:90px; height:90px; border-radius:50%; background:#ff4444; color:white; border:4px solid #fff; pointer-events:auto; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size: 18px; }
       .hidden { display:none !important; }
     </style>
   </head>
@@ -38,7 +36,7 @@
     <div id="hack-overlay"></div>
 
     <div id="main-menu">
-      <h1>เกาะมหาสนุก v3.3.5</h1>
+      <h1 style="color: #00ffcc;">เกาะมหาสนุก v3.4.0</h1>
       <div class="skin-container">
         <div class="skin-btn active" onclick="selectSkin('#imgRed', this)"><img src="jjs.png" width="100%"></div>
         <div class="skin-btn" onclick="selectSkin('#imgBlue', this)"><img src="jjkl.png" width="100%"></div>
@@ -52,7 +50,7 @@
     </div>
 
     <div id="tank-menu" class="hidden">
-      <h2>CHOOSE TANK</h2>
+      <h2>SELECT TANK SKIN</h2>
       <div class="skin-container">
         <div class="tank-option-btn selected" onclick="selectTankSubSkin('rex', '#tankModel', this)">T-Rex</div>
         <div class="tank-option-btn" onclick="selectTankSubSkin('bin', '#binModel', this)">ถังขยะ</div>
@@ -62,6 +60,7 @@
     </div>
 
     <div id="ui-layer" class="hidden">
+      <div id="my-name-display" style="color: gold; font-weight: bold;"></div>
       <div>HP: <span id="hp-text">100</span></div>
     </div>
 
@@ -71,17 +70,15 @@
     </div>
 
     <a-scene renderer="colorManagement: true; antialias: false; precision: medium;" 
-             gltf-model="dracoDecoderPath: https://www.gstatic.com/draco/versioned/decoders/1.5.6/;"
-             loading-screen="backgroundColor: black; dotsColor: #00ffcc;">
+             gltf-model="dracoDecoderPath: https://www.gstatic.com/draco/versioned/decoders/1.5.6/;">
       
-      <a-assets timeout="15000">
+      <a-assets timeout="20000">
         <a-asset-item id="gunModel" src="asd.glb"></a-asset-item>
         <a-asset-item id="axeModel" src="fps.glb"></a-asset-item> 
         <a-asset-item id="islandModel" src="city.glb"></a-asset-item>
         <a-asset-item id="tankModel" src="T-Rex.glb"></a-asset-item>
         <a-asset-item id="binModel" src="bin.glb"></a-asset-item>
         <a-asset-item id="faeModel" src="Fae.glb"></a-asset-item>
-
         <img id="imgRed" src="jjs.png">
         <img id="imgBlue" src="jjkl.png">
         <img id="imgHerta" src="The Herta.png">
@@ -96,16 +93,16 @@
       <a-entity id="rig" position="0 0 0">
         <a-entity id="camera" camera position="0 1.6 0">
           <a-entity id="weapon-P1" gltf-model="#gunModel" position="0.3 -0.4 -0.6" scale="0.4 0.4 0.4" visible="false"></a-entity>
-          <a-entity id="weapon-P2" gltf-model="#axeModel" position="0.2 -0.6 -0.8" scale="1.2 1.2 1.2" visible="false"></a-entity>
+          <a-entity id="weapon-P2" gltf-model="#axeModel" position="0.2 -0.6 -0.8" scale="1.2 1.2 1.2" rotation="0 180 0" visible="false"></a-entity>
           <a-entity id="weapon-P3" gltf-model="#gunModel" position="0.3 -0.4 -0.6" scale="0.4 0.4 0.4" visible="false"></a-entity>
         </a-entity>
         <a-image id="my-skin-display" width="4" height="4" position="0 2 0"></a-image>
-        <a-entity id="my-tank-model" scale="1.5 1.5 1.5" position="0 -1.5 0" visible="false" animation-mixer="clip: walk;"></a-entity>
+        <a-entity id="my-tank-model" scale="1.5 1.5 1.5" position="0 -1.5 0" rotation="0 180 0" visible="false" animation-mixer="clip: walk;"></a-entity>
       </a-entity>
 
-      <a-entity id="player-P1" visible="false"><a-image src="#imgRed" width="4" height="4" position="0 2 0"></a-image><a-box class="targetable" data-id="P1" opacity="0"></a-box></a-entity>
-      <a-entity id="player-P2" visible="false"><a-image src="#imgRed" width="4" height="4" position="0 2 0"></a-image><a-box class="targetable" data-id="P2" opacity="0"></a-box></a-entity>
-      <a-entity id="player-P3" visible="false"><a-entity id="player-P3-model"></a-entity><a-box class="targetable" data-id="P3" opacity="0"></a-box></a-entity>
+      <a-entity id="player-P1" visible="false"><a-image src="#imgRed" width="4" height="4" position="0 2 0"></a-image><a-box class="targetable" data-id="P1" opacity="0" width="4" height="5"></a-box></a-entity>
+      <a-entity id="player-P2" visible="false"><a-image src="#imgRed" width="4" height="4" position="0 2 0"></a-image><a-box class="targetable" data-id="P2" opacity="0" width="4" height="5"></a-box></a-entity>
+      <a-entity id="player-P3" visible="false"><a-entity id="player-P3-model" scale="1.5 1.5 1.5" position="0 -1.5 0" rotation="0 180 0"></a-entity><a-box class="targetable" data-id="P3" opacity="0" width="5" height="6"></a-box></a-entity>
     </a-scene>
 
     <script type="module">
@@ -137,23 +134,24 @@
         if(role === 'P3') {
            health = 300; moveSpeed = 0.4;
            document.getElementById('my-skin-display').setAttribute('visible', false);
-           const t = document.getElementById('my-tank-model');
-           t.setAttribute('gltf-model', selectedTankModel);
-           t.setAttribute('visible', true);
+           document.getElementById('my-tank-model').setAttribute('gltf-model', selectedTankModel);
+           document.getElementById('my-tank-model').setAttribute('visible', true);
+           document.getElementById('my-name-display').innerText = "TANK MODE";
         } else {
            moveSpeed = (role === 'P2' ? 0.6 : 0.3);
            document.getElementById('my-skin-display').setAttribute('src', mySkin);
+           document.getElementById('my-name-display').innerText = (role === 'P2' ? 'WARRIOR' : 'GUNNER');
         }
         document.getElementById('weapon-' + role).setAttribute('visible', true);
 
-        // Firebase Listeners
         onValue(ref(db, `players/${myRole}/stink`), s => { if(s.val() && !isStinking) applyStink(); });
         onValue(ref(db, `players/${myRole}/hacked`), s => { if(s.val() && !isHacked) applyHack(); });
 
+        // Update loop: ส่งทั้ง Position และ Rotation
         setInterval(() => {
           update(ref(db, 'players/' + myRole), {
             p: document.getElementById('rig').getAttribute('position'),
-            r: document.getElementById('camera').getAttribute('rotation'),
+            r: document.getElementById('camera').getAttribute('rotation'), // ส่งค่าการหันหน้า
             hp: health, 
             skin: (role === 'P3' ? 'TANK' : mySkin),
             tankType: (role === 'P3' ? selectedTankModel : '')
@@ -171,6 +169,8 @@
               if (ent) {
                 ent.setAttribute('visible', players[id].hp > 0);
                 ent.setAttribute('position', players[id].p);
+                ent.setAttribute('rotation', {x: 0, y: players[id].r.y, z: 0}); // รับค่าและหันตัวละครคนอื่น
+                
                 if(players[id].skin === 'TANK') {
                   const m = ent.querySelector('#player-P3-model');
                   if(m.getAttribute('gltf-model') !== players[id].tankType) m.setAttribute('gltf-model', players[id].tankType);
@@ -209,9 +209,10 @@
         if (hits.length > 0) {
           const tid = hits[0].object.el.dataset.id;
           if (tid !== myRole) {
-            let up = { hp: 0 };
             onValue(ref(db, `players/${tid}/hp`), s => {
-              up.hp = (s.val() || 100) - (myRole === 'P1' ? 40 : 35);
+              let currentHp = s.val() || 100;
+              let dmg = (myRole === 'P1' ? 40 : 35);
+              let up = { hp: currentHp - dmg };
               if(myRole === 'P3') {
                 if(selectedTankModel === '#binModel') up.stink = true;
                 if(selectedTankModel === '#faeModel') up.hacked = true;
@@ -235,5 +236,5 @@
       }
     </script>
   </body>
-        </html>
+  </html>
   
