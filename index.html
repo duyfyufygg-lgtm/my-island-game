@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Island Survival v1.8.6 - Axe Lowered</title>
+    <title>Island Survival v1.8.7 - Axe Centered Fix</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.2.0/dist/aframe-extras.min.js"></script>
@@ -27,7 +27,7 @@
   <body>
 
     <div id="main-menu">
-      <h1 style="color: #00ffcc; margin-bottom: 5px;">เกาะมหาสนุก v1.8.6</h1>
+      <h1 style="color: #00ffcc; margin-bottom: 5px;">เกาะมหาสนุก v1.8.7</h1>
       <p>1. เลือกสกิน</p>
       <div class="skin-container">
         <div class="skin-btn active" onclick="selectSkin('#imgRed', this)"><img src="jjs.png"></div>
@@ -75,8 +75,8 @@
           
           <a-entity id="weapon-P2" position="0 0 0" visible="false">
              <a-entity gltf-model="#axeModel" 
-                       position="-0.2 -0.9 -1.2" 
-                       rotation="0 160 0" 
+                       position="0 -0.9 -1.2" 
+                       rotation="0 0 0" 
                        scale="1.2 1.2 1.2"
                        animation-mixer="clip: idle; loop: repeat;">
              </a-entity>
@@ -94,6 +94,7 @@
     </a-scene>
 
     <script type="module">
+      // (Script เหมือนเดิมทุกประการครับอาจารย์ ศิษย์ไม่ได้แก้ Logic แค่แก้ตำแหน่งขวานด้านบน)
       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
       import { getDatabase, ref, set, onValue, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
@@ -220,5 +221,5 @@
       }
     </script>
   </body>
-            </html>
-               
+  </html>
+          
