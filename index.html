@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Island Survival v1.8.3 - Weapon Fix</title>
+    <title>Island Survival v1.8.4 - Axe Pivot Fix</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.2.0/dist/aframe-extras.min.js"></script>
@@ -27,7 +27,7 @@
   <body>
 
     <div id="main-menu">
-      <h1 style="color: #00ffcc; margin-bottom: 5px;">เกาะมหาสนุก v1.8.3</h1>
+      <h1 style="color: #00ffcc; margin-bottom: 5px;">เกาะมหาสนุก v1.8.4</h1>
       <p>1. เลือกสกิน</p>
       <div class="skin-container">
         <div class="skin-btn active" onclick="selectSkin('#imgRed', this)"><img src="jjs.png"></div>
@@ -71,15 +71,16 @@
 
       <a-entity id="rig" position="0 0 0">
         <a-entity id="camera" camera position="0 1.6 0">
+          
           <a-entity id="weapon-P1" gltf-model="#gunModel" position="0.3 -0.4 -0.6" rotation="0 -10 0" scale="0.4 0.4 0.4" visible="false"></a-entity>
           
-          <a-entity id="weapon-P2" 
-                    gltf-model="#axeModel" 
-                    position="-0.2 -0.8 -1.2" 
-                    rotation="0 180 0" 
-                    scale="1 1 1" 
-                    visible="false" 
-                    animation-mixer="clip: idle; loop: repeat;">
+          <a-entity id="weapon-P2" position="0 0 0" visible="false">
+             <a-entity gltf-model="#axeModel" 
+                       position="0.5 -0.6 -1.2" 
+                       rotation="0 160 0" 
+                       scale="1.2 1.2 1.2"
+                       animation-mixer="clip: idle; loop: repeat;">
+             </a-entity>
           </a-entity>
           
           <a-entity id="weapon-P3" gltf-model="#gunModel" position="0.3 -0.4 -0.6" rotation="0 -10 0" scale="0.4 0.4 0.4" visible="false"></a-entity>
@@ -135,7 +136,7 @@
         if(activeWeapon) {
           activeWeapon.setAttribute('visible', true);
           window.currentWeapon = activeWeapon;
-          if(role === 'P2') attackDistance = 5; // ระยะประชิดขยายเป็น 5 เมตร
+          if(role === 'P2') attackDistance = 5;
         }
 
         setInterval(() => {
@@ -171,25 +172,24 @@
         e.preventDefault();
         if(!window.currentWeapon) return;
 
-        // เล่นอนิเมชั่น
-        if(myRole === 'P2') {
-          window.currentWeapon.setAttribute('animation-mixer', 'clip: attack; loop: once; crossFadeDuration: 0.1;');
-          setTimeout(() => { window.currentWeapon.setAttribute('animation-mixer', 'clip: idle; loop: repeat; crossFadeDuration: 0.2;'); }, 500);
+        // อนิเมชั่นฟัน
+        const model = window.currentWeapon.querySelector('[gltf-model]');
+        if(myRole === 'P2' && model) {
+          model.setAttribute('animation-mixer', 'clip: attack; loop: once; crossFadeDuration: 0.1;');
+          setTimeout(() => { model.setAttribute('animation-mixer', 'clip: idle; loop: repeat; crossFadeDuration: 0.2;'); }, 500);
         } else {
           window.currentWeapon.setAttribute('position', '0.3 -0.4 -0.4');
           setTimeout(() => window.currentWeapon.setAttribute('position', '0.3 -0.4 -0.6'), 60);
         }
 
-        // ระบบโจมตีแม่นยำ (Raycast จากกลางจอ)
+        // Raycast
         const camEl = document.getElementById('camera');
         const raycaster = new THREE.Raycaster();
         raycaster.far = attackDistance;
-
         const worldPos = new THREE.Vector3();
         camEl.object3D.getWorldPosition(worldPos);
         const worldDir = new THREE.Vector3(0, 0, -1);
         worldDir.applyQuaternion(camEl.object3D.getWorldQuaternion(new THREE.Quaternion()));
-        
         raycaster.set(worldPos, worldDir);
 
         const targetBoxes = document.querySelectorAll('.targetable');
@@ -223,4 +223,5 @@
       }
     </script>
   </body>
-</html>
+  </html>
+        
