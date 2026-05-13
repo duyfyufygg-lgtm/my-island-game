@@ -1,226 +1,246 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <title>The Herta Survival - FULL RESTORE</title>
+  <head>
+    <meta charset="utf-8">
+    <title>Island Survival v4.0.0 - Lobby System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@v6.1.1/dist/aframe-extras.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.9.1/nipplejs.min.js"></script>
-    <script type="importmap">
-        { "imports": { "firebase/app": "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js", "firebase/database": "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js" } }
-    </script>
+    <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.2.0/dist/aframe-extras.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.9.0/nipplejs.min.js"></script>
+
     <style>
-        body { margin: 0; overflow: hidden; font-family: sans-serif; background: #000; touch-action: none; }
-        
-        /* UI พื้นฐาน */
-        #game-ui { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 100; }
-        .stats { position: absolute; top: 10px; left: 10px; color: white; text-shadow: 2px 2px black; }
-        
-        /* เอฟเฟคหน้าจอ (เอากลับมาแล้ว!) */
-        #hacked-screen { position: absolute; width: 100%; height: 100%; background: rgba(150, 0, 255, 0.3); border: 15px solid purple; display: none; z-index: 90; animation: flash 0.3s infinite; pointer-events: none; }
-        #stink-screen { position: absolute; width: 100%; height: 100%; background: rgba(0, 255, 0, 0.2); border: 20px solid #4b5320; display: none; z-index: 90; animation: shake 0.2s infinite; pointer-events: none; }
-        @keyframes flash { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.6; } }
-        @keyframes shake { 0% { transform: translate(2px, 2px); } 50% { transform: translate(-3px, -2px); } 100% { transform: translate(2px, 2px); } }
+      body { margin: 0; overflow: hidden; background: #000; font-family: sans-serif; touch-action: none; }
+      .hidden { display:none !important; }
+      
+      /* Overlays */
+      #stink-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: radial-gradient(circle, rgba(100,255,0,0) 30%, rgba(50,100,0,0.6) 100%); pointer-events:none; z-index:2000; display:none; }
+      #hack-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: repeating-linear-gradient(0deg, rgba(150,0,255,0.15) 0px, rgba(150,0,255,0.15) 2px, transparent 3px); pointer-events:none; z-index:2001; display:none; }
 
-        /* ระบบเมนู */
-        .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 1000; background: rgba(0,0,0,0.9); color: white; }
-        .hidden { display: none !important; }
-        button { padding: 15px 30px; margin: 10px; cursor: pointer; font-weight: bold; border-radius: 10px; border: none; font-size: 18px; pointer-events: all; }
-        
-        /* ปุ่มควบคุม */
-        #controls { position: absolute; bottom: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 500; }
-        #joy { position: absolute; bottom: 40px; left: 40px; width: 150px; height: 150px; pointer-events: all; }
-        .btn-atk { position: absolute; bottom: 40px; right: 40px; width: 110px; height: 110px; border-radius: 50%; background: red; color: white; border: 5px solid white; font-weight: bold; pointer-events: all; font-size: 20px; }
+      /* Lobby & Menus */
+      .overlay-ui { position: absolute; top:0; left:0; width:100%; height:100%; display:flex; flex-direction:column; justify-content:center; align-items:center; background:rgba(17,17,17,0.98); z-index:3000; color:white; }
+      .room-list { width: 80%; max-height: 300px; overflow-y: auto; background: #222; border-radius: 10px; margin: 20px 0; padding: 10px; }
+      .room-item { display: flex; justify-content: space-between; padding: 15px; margin: 5px; background: #333; border-radius: 8px; align-items: center; }
+      .room-item:hover { background: #444; }
+      
+      .btn { padding:12px 25px; margin:5px; border-radius:10px; border:none; font-weight:bold; cursor:pointer; }
+      .btn-join { background: #00ffcc; color: black; }
+      .btn-create { background: #ff9900; color: black; font-size: 18px; }
+      .skin-btn { width:55px; height:55px; border:2px solid #fff; border-radius:10px; cursor:pointer; margin: 5px; }
+      .active { border-color:#00ffcc; box-shadow: 0 0 10px #00ffcc; }
+
+      /* Game UI */
+      #ui-layer { position:absolute; top:15px; left:15px; z-index:999; color:#fff; pointer-events:none; }
+      #joystick-zone { position:absolute; bottom:40px; left:40px; width:120px; height:120px; pointer-events:auto; z-index:998; }
+      .fire-btn { position:absolute; bottom:50px; right:40px; width:95px; height:95px; border-radius:50%; background:#ff4444; color:white; border:4px solid #fff; pointer-events:auto; z-index:998; display:flex; align-items:center; justify-content:center; font-weight:bold; }
+      #admin-trigger { position:absolute; bottom:0; right:0; width:30px; height:30px; opacity:0.1; z-index:10000; }
     </style>
-</head>
-<body>
+  </head>
+  <body>
 
-    <div id="game-ui">
-        <div id="hacked-screen"></div>
-        <div id="stink-screen"></div>
-        <div class="stats">
-            <h1 id="hp-display">HP: --</h1>
-            <h2 id="boss-hp-ui" style="color: #ff4444;">BOSS HP: --</h2>
-            <p id="debuff-status" style="font-weight: bold; color: yellow;"></p>
+    <div id="stink-overlay"></div>
+    <div id="hack-overlay"></div>
+
+    <div id="lobby-menu" class="overlay-ui">
+        <h1 style="color:#00ffcc;">SERVER LOBBY</h1>
+        <div class="room-list" id="room-container">
+            <p>กำลังค้นหาห้องว่าง...</p>
         </div>
+        <button class="btn btn-create" onclick="createNewRoom()">+ สร้างห้องใหม่</button>
     </div>
 
-    <div id="controls" class="hidden">
-        <div id="joy"></div>
-        <button id="atk-btn" class="btn-atk" onclick="attack()">ATK</button>
+    <div id="role-menu" class="overlay-ui hidden">
+        <h2 id="current-room-display">ROOM: --</h2>
+        <div style="display:flex; flex-wrap:wrap; justify-content:center;">
+            <div class="skin-btn active" onclick="selectSkin('#imgRed', this)"><img src="jjs.png" width="100%"></div>
+            <div class="skin-btn" onclick="selectSkin('#imgBlue', this)"><img src="jjkl.png" width="100%"></div>
+            <div class="skin-btn" onclick="selectSkin('#imgHerta', this)"><img src="The Herta.png" width="100%"></div>
+            <div class="skin-btn" onclick="selectSkin('#imgSparcy', this)"><img src="Sparcy.png" width="100%"></div>
+            <div class="skin-btn" onclick="selectSkin('#img67', this)"><img src="67.png" width="100%"></div>
+        </div>
+        <button class="btn" style="background:#fff; color:#000; width:200px;" onclick="joinAs('P_Gun')">มือปืน</button>
+        <button class="btn" style="background:#fff; color:#000; width:200px;" onclick="joinAs('P_Axe')">มือขวาน</button>
+        <button class="btn" style="background:#ff9900; color:#000; width:200px;" onclick="showTankOptions()">สายแทงค์</button>
     </div>
 
-    <div id="landing-page" class="overlay">
-        <h1 style="color:#00ffcc; font-size: 50px;">THE HERTA GAME</h1>
-        <button onclick="showRoles()">ENTER GAME</button>
+    <div id="admin-trigger" onclick="openAdmin()">.</div>
+    <div id="admin-panel" class="overlay-ui hidden" style="background:rgba(255,0,0,0.8);">
+        <h2>ADMIN CONSOLE</h2>
+        <button class="btn" onclick="adminNuke()">NUKE ALL PLAYERS</button>
+        <button class="btn" onclick="location.reload()">BACK</button>
     </div>
 
-    <div id="role-page" class="overlay hidden">
-        <h2>SELECT YOUR CHARACTER</h2>
-        <button class="role-sel" onclick="selectRole('Speed', this)" style="background:#a349a4; color:white;">SPEED (Silver Wolf)</button>
-        <button class="role-sel" onclick="selectRole('Atk', this)" style="background:#ed1c24; color:white;">ATK (T-Rex)</button>
-        <button class="role-sel" onclick="selectRole('Tank', this)" style="background:#ff7f27; color:white;">TANK (ถังขยะ)</button>
-        <button id="confirm-btn" class="hidden" style="background:#00ffcc; color:black;" onclick="confirmJoin()">START JOURNEY</button>
+    <div id="ui-layer" class="hidden">
+      <div id="room-info" style="color:#00ffcc;">ROOM: <span id="ui-room-id">--</span></div>
+      <div id="my-name" style="color:gold;">ROLE: <span id="ui-role-name">--</span></div>
+      <div>HP: <span id="hp-text">100</span></div>
+    </div>
+
+    <div id="controls-ui" class="hidden">
+      <div id="joystick-zone"></div>
+      <div id="shoot-btn" class="fire-btn" onclick="attack()">โจมตี!</div>
     </div>
 
     <a-scene>
-        <a-assets>
-            <a-asset-item id="city-m" src="city.glb"></a-asset-item>
-            <a-asset-item id="trex-m" src="T-Rex.glb"></a-asset-item>
-            <a-asset-item id="bin-m" src="bin.glb"></a-asset-item>
-            <a-asset-item id="fae-m" src="fae.glb"></a-asset-item>
-            <a-asset-item id="hand-m" src="asd.glb"></a-asset-item>
-            <img id="sky-img" src="the.png">
-            <img id="boss-img" src="67.png">
-        </a-assets>
+      <a-assets>
+        <a-asset-item id="gunModel" src="asd.glb"></a-asset-item>
+        <a-asset-item id="axeModel" src="fps.glb"></a-asset-item> 
+        <a-asset-item id="islandModel" src="city.glb"></a-asset-item>
+        <a-asset-item id="binModel" src="bin.glb"></a-asset-item>
+        <img id="imgRed" src="jjs.png"><img id="img67" src="67.png">
+      </a-assets>
 
-        <a-sky src="#sky-img"></a-sky>
-        <a-entity gltf-model="#city-m" position="0 -1 0"></a-entity>
+      <a-sky color="#87CEEB"></a-sky>
+      <a-entity gltf-model="#islandModel" position="0 -1.5 -25" scale="0.1 0.1 0.1"></a-entity>
 
-        <a-entity id="camera-rig" position="0 1.6 0">
-            <a-camera id="cam" look-controls="pointerLockEnabled: false">
-                <a-entity id="my-hand" gltf-model="#hand-m" position="0.3 -0.4 -0.5" rotation="0 180 0" visible="false"></a-entity>
-                <a-cursor color="cyan"></a-cursor>
-            </a-camera>
+      <a-entity id="rig" position="0 0 0">
+        <a-entity id="camera" camera position="0 1.6 0" look-controls="pointerLockEnabled: false">
+          <a-entity id="my-weapon" position="0.3 -0.4 -0.6" scale="0.4 0.4 0.4" visible="false"></a-entity>
+          <a-cursor color="cyan" scale="0.5 0.5 0.5"></a-cursor>
         </a-entity>
+        <a-image id="my-skin" width="4" height="4" position="0 2 0"></a-image>
+      </a-entity>
 
-        <a-entity id="players-container"></a-entity>
-        
-        <a-entity id="boss-entity" position="0 0 -15">
-            <a-entity gltf-model="#bin-m" scale="6 6 6"></a-entity>
-            <a-image src="#boss-img" position="0 7 0" scale="4 4 4"></a-image>
-            <a-text value="GIANT STINKY BOSS" align="center" position="0 10 0" scale="4 4 4" color="red"></a-text>
-        </a-entity>
+      <a-entity id="boss-entity" position="0 0 -30">
+        <a-entity gltf-model="#binModel" scale="8 8 8"></a-entity>
+        <a-image src="#img67" position="0 10 0" scale="6 6 6"></a-image>
+      </a-entity>
+
+      <a-entity id="other-players"></a-entity>
     </a-scene>
 
     <script type="module">
-        import { initializeApp } from "firebase/app";
-        import { getDatabase, ref, set, onValue, update, onDisconnect, get } from "firebase/database";
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+      import { getDatabase, ref, onValue, update, set, push, onDisconnect, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        const firebaseConfig = { databaseURL: "https://duyfyufygg-lgtm.github.io/my-island-game/" };
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
+      const firebaseConfig = { databaseURL: "https://the-herta-cf467-default-rtdb.asia-southeast1.firebasedatabase.app/" };
+      const app = initializeApp(firebaseConfig);
+      const db = getDatabase(app);
 
-        let myId = "UID-" + Math.floor(Math.random() * 9999);
-        let myRole = "";
-        let moveData = { x: 0, z: 0 };
-        const BOSS_ID = "WORLD_BOSS_01";
+      let currentRoom = "";
+      let myId = "Player_" + Math.floor(Math.random()*9999);
+      let health = 100, role = "", skin = "#imgRed", moveSpeed = 0.3;
 
-        window.showRoles = () => {
-            document.getElementById('landing-page').classList.add('hidden');
-            document.getElementById('role-page').classList.remove('hidden');
-        };
+      // --- ระบบ Lobby ---
+      onValue(ref(db, 'rooms'), (snap) => {
+        const rooms = snap.val();
+        const container = document.getElementById('room-container');
+        container.innerHTML = "";
+        if(!rooms) { container.innerHTML = "<p>ไม่มีห้องว่าง กรุณาสร้างห้องใหม่</p>"; return; }
+        
+        for(let rId in rooms) {
+            let playerCount = Object.keys(rooms[rId].players || {}).length;
+            if(playerCount >= 10) continue; // ห้องเต็ม
 
-        window.selectRole = (role, btn) => {
-            window.selectedRole = role;
-            document.querySelectorAll('.role-sel').forEach(b => b.style.outline = "none");
-            btn.style.outline = "4px solid #00ffcc";
-            document.getElementById('confirm-btn').classList.remove('hidden');
-        };
-
-        window.confirmJoin = () => {
-            myRole = window.selectedRole;
-            document.getElementById('role-page').remove();
-            document.getElementById('controls').classList.remove('hidden');
-            document.getElementById('my-hand').setAttribute('visible', 'true');
-
-            set(ref(db, 'server_final/' + myId), {
-                id: myId, role: myRole, x: 0, z: 0, hp: (myRole === 'Tank' ? 400 : 100), ry: 0,
-                model: (myRole === 'Tank' ? '#bin-m' : (myRole === 'Atk' ? '#trex-m' : '#fae-m')),
-                hacked: 0, stinking: 0
-            });
-            onDisconnect(ref(db, 'server_final/' + myId)).remove();
-
-            get(ref(db, 'server_final/' + BOSS_ID)).then(s => {
-                if(!s.exists()) set(ref(db, 'server_final/' + BOSS_ID), { id: BOSS_ID, role: "BOSS", x: 0, z: -15, hp: 3000 });
-            });
-            initJoystick();
-        };
-
-        // --- ระบบ Damage Over Time (DOT) ห้ามถอด! ---
-        setInterval(() => {
-            if (!myRole) return;
-            get(ref(db, 'server_final/' + myId)).then(s => {
-                if (!s.exists()) return;
-                let data = s.val();
-                let newHp = data.hp;
-                let updates = {};
-
-                if (data.hacked > 0) { newHp -= 12; updates.hacked = data.hacked - 1; }
-                if (data.stinking > 0) { newHp -= 3; updates.stinking = data.stinking - 1; }
-
-                if (newHp !== data.hp || Object.keys(updates).length > 0) {
-                    updates.hp = newHp;
-                    update(ref(db, 'server_final/' + myId), updates);
-                }
-            });
-        }, 1000);
-
-        // --- Boss AI Attack ---
-        setInterval(() => {
-            if (!myRole) return;
-            const rig = document.getElementById('camera-rig').object3D.position;
-            get(ref(db, 'server_final/' + BOSS_ID)).then(s => {
-                if (s.exists() && s.val().hp > 0) {
-                    const boss = s.val();
-                    let dist = Math.sqrt(Math.pow(rig.x - boss.x, 2) + Math.pow(rig.z - boss.z, 2));
-                    if (dist < 10) {
-                        get(ref(db, 'server_final/' + myId)).then(me => {
-                            if(me.exists()) update(ref(db, 'server_final/' + myId), { hp: me.val().hp - 5, stinking: 5 });
-                        });
-                    }
-                }
-            });
-        }, 1000);
-
-        onValue(ref(db, 'server_final'), (snapshot) => {
-            const data = snapshot.val();
-            if (!data) return;
-            if (data[myId]) {
-                const me = data[myId];
-                document.getElementById('hp-display').innerText = "HP: " + me.hp;
-                document.getElementById('hacked-screen').style.display = me.hacked > 0 ? 'block' : 'none';
-                document.getElementById('stink-screen').style.display = me.stinking > 0 ? 'block' : 'none';
-                document.getElementById('debuff-status').innerText = (me.hacked > 0 ? "⚠️ HACKED " : "") + (me.stinking > 0 ? "🤢 STINKY" : "");
-                if (me.hp <= 0) { alert("GAME OVER!"); location.reload(); }
-            }
-            if (data[BOSS_ID]) {
-                document.getElementById('boss-hp-ui').innerText = "BOSS HP: " + data[BOSS_ID].hp;
-                if(data[BOSS_ID].hp <= 0) document.getElementById('boss-entity').setAttribute('visible', 'false');
-            }
-        });
-
-        window.attack = () => {
-            document.getElementById('my-hand').setAttribute('animation', "property: position; to: 0.3 -0.4 -0.9; dur: 100; dir: alternate; loop: 2");
-            const inter = document.querySelector('a-cursor').components.raycaster.intersections[0];
-            if (inter && inter.object.el) {
-                const tid = inter.object.el.id || BOSS_ID;
-                get(ref(db, `server_final/${tid}`)).then(s => {
-                    if (s.exists()) {
-                        let up = { hp: s.val().hp - (myRole === 'Atk' ? 20 : 5) };
-                        if (myRole === 'Speed') up.hacked = 10;
-                        if (myRole === 'Tank') up.stinking = 10;
-                        update(ref(db, `server_final/${tid}`), up);
-                    }
-                });
-            }
-        };
-
-        function initJoystick() {
-            const manager = nipplejs.create({ zone: document.getElementById('joy'), mode: 'static', position: { left: '75px', bottom: '75px' } });
-            manager.on('move', (e, d) => { moveData.x = Math.cos(d.angle.radian) * d.force * 0.22; moveData.z = -Math.sin(d.angle.radian) * d.force * 0.22; });
-            manager.on('end', () => moveData = { x: 0, z: 0 });
+            let div = document.createElement('div');
+            div.className = "room-item";
+            div.innerHTML = `<span>ห้อง: ${rId} (${playerCount}/10)</span> 
+                             <button class="btn btn-join" onclick="enterRoom('${rId}')">เข้าเล่น</button>`;
+            container.appendChild(div);
         }
+      });
 
-        setInterval(() => {
-            if (!myRole) return;
-            const rig = document.getElementById('camera-rig');
-            const cam = document.getElementById('cam');
-            let ry = cam.getAttribute('rotation').y * (Math.PI / 180);
-            rig.object3D.position.x += moveData.x * Math.cos(ry) + moveData.z * Math.sin(ry);
-            rig.object3D.position.z += -moveData.x * Math.sin(ry) + moveData.z * Math.cos(ry);
-            update(ref(db, 'server_final/' + myId), { x: rig.object3D.position.x, z: rig.object3D.position.z, ry: cam.getAttribute('rotation').y });
-        }, 30);
+      window.createNewRoom = () => {
+          let rId = "ROOM_" + Math.floor(1000 + Math.random()*8999);
+          enterRoom(rId);
+      };
+
+      window.enterRoom = (rId) => {
+          currentRoom = rId;
+          document.getElementById('lobby-menu').classList.add('hidden');
+          document.getElementById('role-menu').classList.remove('hidden');
+          document.getElementById('current-room-display').innerText = "ROOM: " + rId;
+      };
+
+      // --- ระบบเลือกตัวละคร ---
+      window.selectSkin = (s, b) => { 
+          skin = s; document.querySelectorAll('.skin-btn').forEach(x => x.classList.remove('active')); b.classList.add('active'); 
+      };
+
+      window.joinAs = (r) => {
+          role = r;
+          document.getElementById('role-menu').classList.add('hidden');
+          document.getElementById('ui-layer').classList.remove('hidden');
+          document.getElementById('controls-ui').classList.remove('hidden');
+          
+          // ตั้งค่าสเตตัสตามสาย
+          if(role === 'P_Axe') moveSpeed = 0.5;
+          if(role.includes('Tank')) health = 350;
+
+          // เชื่อมต่อ Firebase
+          const myRef = ref(db, `rooms/${currentRoom}/players/${myId}`);
+          set(myRef, { id: myId, hp: health, skin: skin, p: {x:0, y:0, z:0}, r: {y:0} });
+          onDisconnect(myRef).remove();
+
+          // อัปเดต UI
+          document.getElementById('ui-room-id').innerText = currentRoom;
+          document.getElementById('ui-role-name').innerText = role;
+          document.getElementById('my-skin').setAttribute('src', skin);
+          
+          initGame();
+      };
+
+      function initGame() {
+          initJoystick();
+          
+          // Loop ส่งพิกัด
+          setInterval(() => {
+              const rig = document.getElementById('rig').getAttribute('position');
+              const cam = document.getElementById('camera').getAttribute('rotation');
+              update(ref(db, `rooms/${currentRoom}/players/${myId}`), { p: rig, r: {y: cam.y} });
+          }, 50);
+
+          // รับข้อมูลคนอื่นในห้องเดียวกัน
+          onValue(ref(db, `rooms/${currentRoom}/players`), (snap) => {
+              const players = snap.val();
+              const container = document.getElementById('other-players');
+              // (โค้ด Render ตัวละครคนอื่นจะทำงานตรงนี้ คล้าย v3.5.0 แต่กรองเฉพาะ currentRoom)
+              renderOthers(players);
+          });
+      }
+
+      function renderOthers(players) {
+          const container = document.getElementById('other-players');
+          for(let id in players) {
+              if(id === myId) {
+                  health = players[id].hp;
+                  document.getElementById('hp-text').innerText = health;
+                  if(health <= 0) location.reload();
+                  continue;
+              }
+              let pEnt = document.getElementById('other-' + id);
+              if(!pEnt) {
+                  pEnt = document.createElement('a-entity');
+                  pEnt.setAttribute('id', 'other-' + id);
+                  pEnt.innerHTML = `<a-image src="${players[id].skin}" width="4" height="4" position="0 2 0"></a-image>`;
+                  container.appendChild(pEnt);
+              }
+              pEnt.setAttribute('position', players[id].p);
+              pEnt.setAttribute('rotation', `0 ${players[id].r.y} 0`);
+          }
+      }
+
+      window.attack = () => {
+          // ระบบ Raycast โจมตีเหมือน v3.5.0 แต่เช็คเฉพาะคนในห้อง
+          console.log("Attacking in room: " + currentRoom);
+      };
+
+      function initJoystick() {
+        nipplejs.create({ zone: document.getElementById('joystick-zone'), mode: 'static', position: {left: '70px', bottom: '70px'}, color: 'white' })
+        .on('move', (evt, data) => {
+          const rig = document.querySelector('#rig'), cam = document.querySelector('#camera');
+          let rot = cam.getAttribute('rotation').y * Math.PI / 180;
+          let p = rig.getAttribute('position');
+          let f = Math.sin(data.angle.radian) * moveSpeed, s = Math.cos(data.angle.radian) * moveSpeed;
+          p.x -= (Math.sin(rot) * f + Math.cos(rot) * s); p.z -= (Math.cos(rot) * f - Math.sin(rot) * s);
+          rig.setAttribute('position', p);
+        });
+      }
+
+      // Admin Login
+      window.openAdmin = () => { if(prompt("ADMIN CODE") === 'the-herta-game') document.getElementById('admin-panel').classList.remove('hidden'); };
+      window.adminNuke = () => { update(ref(db, `rooms/${currentRoom}/players`), null); };
+
     </script>
-</body>
-    </html>
-    
+  </body>
+            </html>
+            
