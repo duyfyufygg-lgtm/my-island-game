@@ -1,244 +1,161 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Island Survival - Official One World</title>
+    <title>Island Survival - SKIN & FPS FIXED</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@v6.1.1/dist/aframe-extras.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.9.0/nipplejs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.9.1/nipplejs.min.js"></script>
     <script src="https://unpkg.com/socket.io-client@4.7.2/dist/socket.io.min.js"></script>
     <script src="https://unpkg.com/networked-aframe@0.12.0/dist/networked-aframe.min.js"></script>
 
     <style>
-      body { margin: 0; overflow: hidden; user-select: none; -webkit-tap-highlight-color: transparent; background-color: #000; }
-      #main-menu { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; background: radial-gradient(circle, #222 0%, #000 100%); z-index: 1000; color: white; font-family: sans-serif; text-align: center; }
-      .menu-btn { padding: 15px 50px; font-size: 20px; border-radius: 12px; cursor: pointer; border: none; margin: 12px; font-weight: bold; width: 280px; transition: 0.2s; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-      .btn-multi { background: #00ffcc; color: black; }
-      .btn-solo { background: #555; color: white; }
-      .menu-btn:active { transform: scale(0.95); }
+      body { margin: 0; overflow: hidden; background: #000; touch-action: none; font-family: sans-serif; }
+      #main-menu { position: fixed; inset: 0; background: #111; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; }
+      .team-btn { padding: 20px 40px; font-size: 24px; margin: 10px; border-radius: 15px; border: none; cursor: pointer; width: 250px; font-weight: bold; }
       
-      #damage-flash { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 0, 0, 0.5); z-index: 996; pointer-events: none; display: none; }
-      #ui-layer { position: absolute; top: 20px; left: 20px; z-index: 999; color: white; font-family: sans-serif; pointer-events: none; }
-      #health-bar { width: 200px; height: 18px; background: rgba(51, 51, 51, 0.8); border: 2px solid white; margin-top: 5px; border-radius: 9px; overflow: hidden; }
-      #health-fill { width: 100%; height: 100%; background: linear-gradient(90deg, #ff0000, #ff6666); transition: width 0.2s; }
+      #ui-layer { position: fixed; inset: 0; pointer-events: none; z-index: 9000; }
+      #joystick-zone { position: absolute; bottom: 40px; left: 40px; width: 150px; height: 150px; pointer-events: auto; background: rgba(255,255,255,0.15); border-radius: 50%; }
+      #shoot-btn { position: absolute; bottom: 60px; right: 60px; width: 110px; height: 110px; border-radius: 50%; background: #ff0000; border: 5px solid white; pointer-events: auto; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 22px; box-shadow: 0 0 20px red; }
       
-      #customize-btn { position: absolute; top: 20px; right: 20px; z-index: 1000; padding: 10px 15px; font-size: 24px; border-radius: 12px; background: rgba(0, 0, 0, 0.5); color: white; border: 2px solid #00ffcc; cursor: pointer; }
-      #fullscreen-btn { position: absolute; top: 80px; right: 20px; z-index: 1000; padding: 10px 15px; font-size: 18px; border-radius: 12px; background: #8e44ad; color: white; border: 2px solid white; cursor: pointer; font-weight: bold; }
-      #customize-menu { position: absolute; top: 140px; right: 20px; z-index: 1000; background: rgba(0,0,0,0.9); border-radius: 15px; padding: 15px; border: 2px solid #00ffcc; display: none; flex-direction: column; align-items: center; }
-      .skin-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-      .skin-option { width: 70px; height: 70px; cursor: pointer; border: 2px solid #fff; border-radius: 10px; overflow: hidden; background: #333; }
-      .skin-option img { width: 100%; height: 100%; object-fit: contain; }
-
-      #controls-ui { position: absolute; bottom: 0; left: 0; width: 100%; height: 100%; z-index: 998; pointer-events: none; }
-      #joystick-zone { position: absolute; bottom: 40px; left: 40px; width: 120px; height: 120px; pointer-events: auto; }
-      .fire-btn { position: absolute; bottom: 50px; right: 40px; width: 110px; height: 110px; border-radius: 50%; background: rgba(255, 0, 0, 0.8); color: white; border: 5px solid #fff; pointer-events: auto; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: bold; box-shadow: 0 0 20px rgba(255,0,0,0.4); }
+      #skin-control { position: absolute; top: 20px; right: 20px; pointer-events: auto; display: flex; flex-direction: column; gap: 5px; }
+      .skin-btn { padding: 10px; background: rgba(0,0,0,0.7); color: #00ffcc; border: 1px solid #00ffcc; border-radius: 5px; cursor: pointer; }
+      
+      #hud { position: absolute; top: 20px; width: 100%; text-align: center; color: white; font-size: 24px; text-shadow: 2px 2px #000; }
       .hidden { display: none !important; }
     </style>
   </head>
   <body>
-    <div id="damage-flash"></div>
-    
+
     <div id="main-menu">
-      <h1 style="color: #00ffcc; letter-spacing: 5px; margin-bottom: 30px; text-shadow: 0 0 10px #00ffcc;">เกาะมหาสนุก</h1>
-      <button class="menu-btn btn-multi" onclick="startGame('multi')">เข้าสู่โลกออนไลน์</button>
-      <button class="menu-btn btn-solo" onclick="startGame('solo')">เล่นคนเดียว (บอท)</button>
-      <p style="font-size: 12px; opacity: 0.6; margin-top: 20px;">Developer: Master & AI Apprentice</p>
+      <h1 style="color:#00ffcc">TEAM BATTLE ONLINE</h1>
+      <button class="team-btn" style="background:#ff4d4d" onclick="startGame('red')">เข้าร่วมทีมแดง</button>
+      <button class="team-btn" style="background:#4d94ff" onclick="startGame('blue')">เข้าร่วมทีมน้ำเงิน</button>
     </div>
 
     <div id="ui-layer" class="hidden">
-      <div style="font-weight: bold; text-shadow: 2px 2px #000;">HP: <span id="hp-text">100</span></div>
-      <div id="health-bar"><div id="health-fill"></div></div>
-    </div>
-
-    <button id="fullscreen-btn" class="hidden">📱 เต็มจอ</button>
-    <button id="customize-btn" class="hidden" onclick="toggleCustomizeMenu()">👕 เปลี่ยนสกิน</button>
-    
-    <div id="customize-menu">
-      <p style="color:white; margin:0 0 10px 0; font-size: 14px;">เลือกตัวละคร</p>
-      <div class="skin-grid">
-        <div class="skin-option" onclick="setMySkin('skinRed')"><img src="jjs.png"></div>
-        <div class="skin-option" onclick="setMySkin('skinBlue')"><img src="jjkl.png"></div>
-        <div class="skin-option" onclick="setMySkin('skinHerta')"><img src="The Herta.png"></div>
-        <div class="skin-option" onclick="setMySkin('skinSparcy')"><img src="Sparcy.png"></div>
+      <div id="hud">
+        <div id="timer">05:00</div>
+        <div id="score">RED: 0 | BLUE: 0</div>
       </div>
-    </div>
 
-    <div id="controls-ui" class="hidden">
+      <div id="skin-control">
+        <button class="skin-btn" onclick="changeSkin('jjs.png')">Skin 1</button>
+        <button class="skin-btn" onclick="changeSkin('jjkl.png')">Skin 2</button>
+        <button class="skin-btn" onclick="changeSkin('The Herta.png')">Skin 3</button>
+        <button class="skin-btn" onclick="changeSkin('Sparcy.png')">Skin 4</button>
+      </div>
+
       <div id="joystick-zone"></div>
-      <div id="shoot-btn" class="fire-btn">FIRE!!</div>
+      <div id="shoot-btn">ยิง!!</div>
     </div>
 
-    <a-scene id="scene" renderer="colorManagement: true; exposure: 1.2; antialias: true;">
+    <a-scene networked-scene="serverURL: https://naf-examples.glitch.me/; app: final_skin_war; room: global; adapter: socketio;">
       <a-assets>
-        <a-asset-item id="gunModel" src="asd.glb"></a-asset-item>
-        <a-asset-item id="islandModel" src="city.glb"></a-asset-item>
-        <img id="imgRed" src="jjs.png">
-        <img id="imgBlue" src="jjkl.png">
-        <img id="imgHerta" src="The Herta.png">
-        <img id="imgSparcy" src="Sparcy.png">
-        
+        <a-asset-item id="gun" src="asd.glb"></a-asset-item>
+        <a-asset-item id="city" src="city.glb"></a-asset-item>
+        <img id="skin1" src="jjs.png">
+        <img id="skin2" src="jjkl.png">
+        <img id="skin3" src="The Herta.png">
+        <img id="skin4" src="Sparcy.png">
+
         <template id="player-template">
           <a-entity class="player-avatar">
-            <a-image class="avatar-display" src="#imgRed" width="2" height="2" position="0 1 0"></a-image>
+            <a-sphere class="team-marker" radius="0.25" position="0 2.3 0"></a-sphere>
+            <a-image class="avatar-image" src="#skin1" width="2" height="2" position="0 1 0"></a-image>
           </a-entity>
         </template>
       </a-assets>
 
       <a-sky color="#87CEEB"></a-sky>
-      <a-entity light="type: ambient; intensity: 1.5; color: #FFF"></a-entity>
-      <a-entity light="type: directional; intensity: 1.0;" position="1 10 5"></a-entity>
-      <a-plane position="0 0 0" rotation="-90 0 0" width="1000" height="1000" material="opacity: 0; transparent: true"></a-plane>
-      <a-entity id="island" gltf-model="#islandModel" position="0 -1.5 -30" scale="0.1 0.1 0.1"></a-entity>
+      <a-entity gltf-model="#city" position="0 -1.5 -30" scale="0.1 0.1 0.1"></a-entity>
+      <a-plane rotation="-90 0 0" width="1000" height="1000" color="#222"></a-plane>
 
       <a-entity id="rig" position="0 0 0" networked="template: #player-template; attachTemplateToLocal: false;">
-        <a-entity id="camera" 
-                  camera 
-                  position="0 1.6 0" 
-                  look-controls="touchEnabled: true; magicWindowTrackingEnabled: false; pointerLockEnabled: false;">
-          
-          <a-entity id="weapon-container" position="0.35 -0.4 -0.6">
-             <a-entity id="weapon" gltf-model="#gunModel" rotation="0 -11 0" scale="0.4 0.4 0.4" visible="false"></a-entity>
-          </a-entity>
-
-          <a-entity id="crosshair" cursor position="0 0 -1" 
-                    geometry="primitive: ring; radiusInner: 0.01; radiusOuter: 0.015" 
-                    material="color: #00ff00; shader: flat; opacity: 0.8" 
-                    raycaster="objects: .player-avatar, #bot-enemy; far: 100">
+        <a-entity id="cam" camera position="0 1.6 0" look-controls="magicWindowTrackingEnabled: false; touchEnabled: true;">
+          <a-entity id="gun-model" gltf-model="#gun" position="0.3 -0.4 -0.6" scale="0.4 0.4 0.4"></a-entity>
+          <a-entity id="cursor" cursor position="0 0 -1" 
+                    geometry="primitive: ring; radiusInner: 0.008; radiusOuter: 0.012" 
+                    material="color: #00ff00; shader: flat" 
+                    raycaster="objects: .player-avatar; far: 100">
           </a-entity>
         </a-entity>
       </a-entity>
-
-      <a-image id="bot-enemy" class="targetable" src="#imgRed" position="0 2 -15" width="5" height="5" visible="false" data-hp="100"></a-image>
     </a-scene>
 
     <script>
-      // ตั้งค่า Networked Schema เพื่อส่งข้อมูลตำแหน่งและสกิน
+      let myTeam = '';
+      const shootSound = new Audio("https://actions.google.com/sounds/v1/weapons/fire_arm_gunshot.ogg");
+
+      // ส่งข้อมูลสกินข้ามเครือข่าย
       if (typeof NAF !== 'undefined') {
         NAF.schemas.add({
           template: '#player-template',
-          components: ['position', 'rotation', { selector: '.avatar-display', component: 'src' }]
+          components: ['position', 'rotation', { selector: '.team-marker', component: 'material.color' }, { selector: '.avatar-image', component: 'src' }]
         });
       }
 
-      let health = 100;
-      let isMulti = false;
-      let criticalInterval = null;
-
-      function startGame(mode) {
-        if (mode === 'multi') {
-          isMulti = true;
-          document.getElementById('scene').setAttribute('networked-scene', {
-            serverURL: 'https://naf-examples.glitch.me/',
-            app: 'island_online_master',
-            room: 'global_lobby',
-            adapter: 'socketio'
-          });
-        } else if (mode === 'solo') {
-          document.getElementById('bot-enemy').setAttribute('visible', 'true');
-        }
-
-        // รีเซ็ตตำแหน่งกล้องให้มองตรง
-        document.querySelector('#camera').setAttribute('rotation', '0 0 0');
-
+      function startGame(team) {
+        myTeam = team;
+        shootSound.play().then(() => { shootSound.pause(); shootSound.currentTime = 0; });
         document.getElementById('main-menu').classList.add('hidden');
-        document.getElementById('controls-ui').classList.remove('hidden');
         document.getElementById('ui-layer').classList.remove('hidden');
-        document.getElementById('customize-btn').classList.remove('hidden');
-        document.getElementById('fullscreen-btn').classList.remove('hidden');
-        document.querySelector('#weapon').setAttribute('visible', 'true');
+        
+        const marker = document.querySelector('#rig .team-marker');
+        if(marker) marker.setAttribute('material', 'color', team);
+
         initJoystick();
       }
 
-      function toggleCustomizeMenu() {
-        const menu = document.getElementById('customize-menu');
-        menu.style.display = (menu.style.display === 'flex') ? 'none' : 'flex';
+      function changeSkin(file) {
+        const myAvatar = document.querySelector('#rig .avatar-image');
+        if(myAvatar) myAvatar.setAttribute('src', file);
       }
 
-      function setMySkin(skin) {
-        let skinSrc = '#imgRed';
-        if (skin === 'skinBlue') skinSrc = '#imgBlue';
-        if (skin === 'skinHerta') skinSrc = '#imgHerta';
-        if (skin === 'skinSparcy') skinSrc = '#imgSparcy';
-
-        const myAvatar = document.querySelector('#rig .avatar-display');
-        if(myAvatar) myAvatar.setAttribute('src', skinSrc);
-        toggleCustomizeMenu();
+      function initJoystick() {
+        nipplejs.create({
+          zone: document.getElementById('joystick-zone'),
+          mode: 'static',
+          position: { left: '75px', bottom: '75px' },
+          color: 'white',
+          size: 120
+        }).on('move', (evt, data) => {
+          const rig = document.getElementById('rig');
+          const cam = document.getElementById('cam');
+          const rot = cam.getAttribute('rotation').y * Math.PI / 180;
+          const pos = rig.getAttribute('position');
+          const speed = 0.2;
+          const f = Math.sin(data.angle.radian) * speed;
+          const s = Math.cos(data.angle.radian) * speed;
+          pos.x -= (Math.sin(rot) * f + Math.cos(rot) * s);
+          pos.z -= (Math.cos(rot) * f - Math.sin(rot) * s);
+          rig.setAttribute('position', pos);
+        });
       }
 
       // ระบบยิง
       document.getElementById('shoot-btn').addEventListener('touchstart', (e) => {
         e.preventDefault();
-        const weapon = document.querySelector('#weapon');
-        weapon.setAttribute('position', '0 0 0.1'); 
-        setTimeout(() => weapon.setAttribute('position', '0 0 0'), 60);
+        shootSound.currentTime = 0;
+        shootSound.play();
 
-        const raycaster = document.querySelector('#crosshair').components.raycaster;
-        const intersections = raycaster.intersections;
-        if (intersections.length > 0) {
-          const target = intersections[0].object.el;
-          
-          if (target.id === 'bot-enemy') {
-            let bHp = parseInt(target.getAttribute('data-hp')) - 25;
-            target.setAttribute('data-hp', bHp);
-            if (bHp <= 0) { target.setAttribute('visible', 'false'); setTimeout(() => { target.setAttribute('visible', 'true'); target.setAttribute('data-hp', 100); }, 3000); }
-          }
-          
-          if (isMulti) {
-            const networkedEl = NAF.utils.getNetworkedEntity(target);
-            if (networkedEl) {
-              const targetId = NAF.utils.getNetworkId(networkedEl);
-              NAF.connection.broadcastData('take_damage', { targetId: targetId, damage: 20 });
-            }
-          }
+        const gun = document.getElementById('gun-model');
+        gun.setAttribute('position', '0.3 -0.4 -0.5');
+        setTimeout(() => gun.setAttribute('position', '0.3 -0.4 -0.6'), 60);
+
+        const ray = document.getElementById('cursor').components.raycaster;
+        if (ray.intersections.length > 0) {
+          const target = ray.intersections[0].object.el;
+          const netId = NAF.utils.getNetworkId(target);
+          if (netId) NAF.connection.broadcastData('hit', { id: netId, fromTeam: myTeam });
         }
       });
 
-      function takeDamage(dmg) {
-        health -= dmg; if (health < 0) health = 0;
-        updateUI();
-        const flash = document.getElementById('damage-flash');
-        flash.style.display = 'block';
-        setTimeout(() => { if (health > 30) flash.style.display = 'none'; }, 100);
-        if (health <= 30 && health > 0 && !criticalInterval) {
-          criticalInterval = setInterval(() => { flash.style.display = (flash.style.display === 'none') ? 'block' : 'none'; }, 200);
-        }
-        if (health <= 0) { alert("Game Over! คุณถูกกำจัด"); location.reload(); }
-      }
-
-      function updateUI() {
-        document.getElementById('hp-text').innerText = health;
-        document.getElementById('health-fill').style.width = health + "%";
-      }
-
-      document.body.addEventListener('connected', () => {
-        NAF.connection.subscribeToData('take_damage', (senderId, dataType, data) => {
-          const myId = NAF.utils.getNetworkId(document.getElementById('rig'));
-          if (data.targetId === myId) takeDamage(data.damage);
-        });
-      });
-
-      // ควบคุมการเดิน
-      function initJoystick() {
-        const manager = nipplejs.create({ zone: document.getElementById('joystick-zone'), mode: 'static', position: {left: '70px', bottom: '70px'}, color: 'white' });
-        manager.on('move', (evt, data) => {
-          const rig = document.querySelector('#rig');
-          const cam = document.querySelector('#camera');
-          let rot = cam.getAttribute('rotation').y * Math.PI / 180;
-          let speed = 0.22;
-          let pos = rig.getAttribute('position');
-          let moveF = Math.sin(data.angle.radian) * speed;
-          let moveS = Math.cos(data.angle.radian) * speed;
-          pos.x -= (Math.sin(rot) * moveF + Math.cos(rot) * moveS);
-          pos.z -= (Math.cos(rot) * moveF - Math.sin(rot) * moveS);
-          rig.setAttribute('position', pos);
-        });
-      }
-
-      const fsBtn = document.getElementById('fullscreen-btn');
-      fsBtn.addEventListener('click', () => {
-        if (!document.fullscreenElement) { document.documentElement.requestFullscreen(); fsBtn.innerText = "🔙 ออก"; }
-        else { document.exitFullscreen(); fsBtn.innerText = "📱 เต็มจอ"; }
-      });
+      // ล็อคหน้าจอไม่ให้ก้มเงย (FPS Fix)
+      setInterval(() => {
+        const cam = document.getElementById('cam');
+        const rot = cam.getAttribute('rotation');
+        cam.setAttribute('rotation', {x: 0, y: rot.y, z: 0});
+      }, 10);
     </script>
   </body>
-          </html>
-  
+</html>
