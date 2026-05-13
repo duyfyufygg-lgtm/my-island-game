@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Island Survival v3.4.0 - Rotation Restored</title>
+    <title>Island Survival v3.4.0 - Lobby & Admin Restored</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.2.0/dist/aframe-extras.min.js"></script>
@@ -15,12 +15,12 @@
       @keyframes pulse { from {opacity: 0.4;} to {opacity: 0.8;} }
       @keyframes glitch { 0% {transform: translate(0);} 50% {transform: translate(3px,-2px); filter: contrast(1.5);} 100% {transform: translate(0);} }
 
-      /* ส่วนที่เพิ่ม: Lobby & Admin UI */
-      #lobby-screen { position: absolute; top:0; left:0; width:100%; height:100%; display:flex; flex-direction:column; justify-content:center; align-items:center; background:#000; z-index:4000; color:white; }
-      .room-container { width: 80%; height: 200px; overflow-y: auto; background: #222; margin: 20px; border-radius: 10px; padding: 10px; }
-      .room-item { background: #444; margin: 5px; padding: 15px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; }
-      #admin-door { position: absolute; bottom: 5px; right: 5px; width: 20px; height: 20px; opacity: 0.1; z-index: 5000; cursor: pointer; }
-      #admin-menu { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.9); z-index: 6000; display:none; flex-direction: column; justify-content: center; align-items: center; color: white; }
+      /* ส่วนเพิ่ม: Lobby & Admin */
+      #lobby-screen { position: absolute; top:0; left:0; width:100%; height:100%; display:flex; flex-direction:column; justify-content:center; align-items:center; background:#111; z-index:4000; color:white; }
+      .room-list { width: 80%; height: 200px; overflow-y: auto; background: #222; margin: 15px; border-radius: 10px; padding: 10px; }
+      .room-item { background: #333; margin: 5px; padding: 12px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; }
+      #admin-door { position: absolute; bottom: 0; right: 0; width: 40px; height: 40px; opacity: 0.05; z-index: 5000; cursor: pointer; }
+      #admin-panel { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.95); z-index: 6000; display:none; flex-direction: column; justify-content: center; align-items: center; color: white; }
 
       #main-menu, #tank-menu { position: absolute; top:0; left:0; width:100%; height:100%; display:flex; flex-direction:column; justify-content:center; align-items:center; background:#111; z-index:1000; color:white; text-align: center; }
       .skin-container { display:flex; gap:10px; margin:15px 0; flex-wrap:wrap; justify-content:center; max-width: 90%; }
@@ -43,21 +43,19 @@
     <div id="hack-overlay"></div>
 
     <div id="lobby-screen">
-      <h1 style="color: #00ffcc;">LOBBY BROWSER</h1>
-      <div class="room-container" id="room-list">
-        <p>Searching for rooms...</p>
-      </div>
-      <button class="role-btn" onclick="createNewRoom()" style="background:#00ffcc; color:black; border:none;">สร้างห้องใหม่</button>
+      <h2 style="color: #00ffcc;">SELECT SERVER</h2>
+      <div class="room-list" id="room-list-ui">Searching...</div>
+      <button class="role-btn" onclick="createRoom()" style="background:#00ffcc; color:black; border:none;">CREATE NEW ROOM</button>
       <div id="admin-door" onclick="showAdminLogin()"></div>
     </div>
 
-    <div id="admin-menu">
-      <h2>ADMIN PANEL</h2>
-      <input type="password" id="admin-pass" placeholder="Enter Code..." style="padding:10px; margin-bottom:10px;">
+    <div id="admin-panel">
+      <h2>ADMIN CONTROL</h2>
+      <input type="password" id="admin-pass" placeholder="Password" style="padding:10px; margin-bottom:10px;">
       <button class="role-btn" onclick="checkAdmin()">LOGIN</button>
-      <button class="role-btn" onclick="document.getElementById('admin-menu').style.display='none'">CANCEL</button>
-      <div id="admin-controls" style="display:none; margin-top:20px;">
-        <button class="role-btn" onclick="adminKillAll()" style="background:red;">KILL ALL PLAYERS</button>
+      <button class="role-btn" onclick="document.getElementById('admin-panel').style.display='none'">CLOSE</button>
+      <div id="admin-tools" style="display:none; margin-top:15px;">
+          <button class="role-btn" style="background:red;" onclick="adminKillAll()">RESET ROOM PLAYERS</button>
       </div>
     </div>
 
@@ -88,7 +86,7 @@
     <div id="ui-layer" class="hidden">
       <div id="my-name-display" style="color: gold; font-weight: bold;"></div>
       <div>HP: <span id="hp-text">100</span></div>
-      <div id="room-display" style="font-size: 12px; opacity: 0.6;">Room: None</div>
+      <div id="room-id-display" style="font-size:10px; opacity:0.5;">Room: None</div>
     </div>
 
     <div id="controls-ui" class="hidden">
@@ -106,11 +104,8 @@
         <a-asset-item id="tankModel" src="T-Rex.glb"></a-asset-item>
         <a-asset-item id="binModel" src="bin.glb"></a-asset-item>
         <a-asset-item id="faeModel" src="Fae.glb"></a-asset-item>
-        <img id="imgRed" src="jjs.png">
-        <img id="imgBlue" src="jjkl.png">
-        <img id="imgHerta" src="The Herta.png">
-        <img id="imgSparcy" src="Sparcy.png">
-        <img id="img67" src="67.png">
+        <img id="imgRed" src="jjs.png"><img id="imgBlue" src="jjkl.png">
+        <img id="imgHerta" src="The Herta.png"><img id="imgSparcy" src="Sparcy.png"><img id="img67" src="67.png">
       </a-assets>
 
       <a-sky color="#87CEEB"></a-sky>
@@ -127,12 +122,14 @@
         <a-entity id="my-tank-model" scale="1.5 1.5 1.5" position="0 -1.5 0" rotation="0 180 0" visible="false" animation-mixer="clip: walk;"></a-entity>
       </a-entity>
 
-      <a-entity id="other-players"></a-entity>
+      <a-entity id="player-P1" visible="false"><a-image src="#imgRed" width="4" height="4" position="0 2 0"></a-image><a-box class="targetable" data-id="P1" opacity="0" width="4" height="5"></a-box></a-entity>
+      <a-entity id="player-P2" visible="false"><a-image src="#imgRed" width="4" height="4" position="0 2 0"></a-image><a-box class="targetable" data-id="P2" opacity="0" width="4" height="5"></a-box></a-entity>
+      <a-entity id="player-P3" visible="false"><a-entity id="player-P3-model" scale="1.5 1.5 1.5" position="0 -1.5 0" rotation="0 180 0"></a-entity><a-box class="targetable" data-id="P3" opacity="0" width="5" height="6"></a-box></a-entity>
     </a-scene>
 
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-      import { getDatabase, ref, onValue, update, set, push, onDisconnect } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+      import { getDatabase, ref, onValue, update, set, remove, onDisconnect } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
       const firebaseConfig = { databaseURL: "https://the-herta-cf467-default-rtdb.asia-southeast1.firebasedatabase.app/" };
       const app = initializeApp(firebaseConfig);
@@ -141,49 +138,36 @@
       let health = 100, myRole = "", mySkin = "#imgRed", moveSpeed = 0.3;
       let selectedTankModel = "#tankModel", isStinking = false, isHacked = false;
       let currentRoom = "";
-      let myPlayerId = "P_" + Math.floor(Math.random() * 9999);
 
-      // --- ระบบ Lobby (เลื่อนหาห้อง) ---
+      // --- ระบบ Lobby (ห้ามแก้โค้ดเกมเดิม) ---
       onValue(ref(db, 'rooms'), (snap) => {
         const rooms = snap.val();
-        const list = document.getElementById('room-list');
+        const list = document.getElementById('room-list-ui');
         list.innerHTML = "";
-        if(!rooms) { list.innerHTML = "<p>No rooms found.</p>"; return; }
-        
+        if(!rooms) { list.innerHTML = "No rooms found."; return; }
         for(let rId in rooms) {
           let count = Object.keys(rooms[rId].players || {}).length;
           if(count >= 10) continue;
-          let div = document.createElement('div');
-          div.className = "room-item";
+          let div = document.createElement('div'); div.className="room-item";
           div.innerHTML = `<span>Room: ${rId} (${count}/10)</span> <button onclick="joinRoom('${rId}')">JOIN</button>`;
           list.appendChild(div);
         }
       });
 
-      window.createNewRoom = () => {
-        let rId = "Room_" + Math.floor(1000 + Math.random() * 8999);
-        joinRoom(rId);
-      };
-
-      window.joinRoom = (rId) => {
-        currentRoom = rId;
-        document.getElementById('lobby-screen').classList.add('hidden');
+      window.createRoom = () => { let rId = "R_" + Math.floor(Math.random()*999); joinRoom(rId); };
+      window.joinRoom = (rId) => { 
+        currentRoom = rId; 
+        document.getElementById('lobby-screen').classList.add('hidden'); 
         document.getElementById('main-menu').classList.remove('hidden');
-        document.getElementById('room-display').innerText = "Room: " + rId;
+        document.getElementById('room-id-display').innerText = "Room: " + rId;
       };
 
-      // --- ระบบ Admin ---
-      window.showAdminLogin = () => { document.getElementById('admin-menu').style.display = 'flex'; };
-      window.checkAdmin = () => {
-        if(document.getElementById('admin-pass').value === 'the-herta-game') {
-          document.getElementById('admin-controls').style.display = 'block';
-          alert('Admin Access Granted');
-        } else { alert('Wrong code'); }
-      };
-      window.adminKillAll = () => {
-        update(ref(db, `rooms/${currentRoom}/players`), {}); // ล้างผู้เล่นออกให้หมด (ตายยกห้อง)
-      };
+      // --- Admin ---
+      window.showAdminLogin = () => document.getElementById('admin-panel').style.display='flex';
+      window.checkAdmin = () => { if(document.getElementById('admin-pass').value === 'the-herta-game') { document.getElementById('admin-tools').style.display='block'; } };
+      window.adminKillAll = () => remove(ref(db, `rooms/${currentRoom}/players`));
 
+      // --- โค้ดเกมเดิม (ห้ามตัดห้ามเปลี่ยน) ---
       window.selectSkin = (s, b) => { 
         mySkin = s; document.querySelectorAll('.skin-btn').forEach(x => x.classList.remove('active')); b.classList.add('active'); 
       };
@@ -212,15 +196,16 @@
         }
         document.getElementById('weapon-' + role).setAttribute('visible', true);
 
-        // ระบบเชื่อมต่อ Firebase แยกห้อง
-        const pRef = ref(db, `rooms/${currentRoom}/players/${myPlayerId}`);
-        onDisconnect(pRef).remove();
+        // Firebase Sync (แยกตามห้อง)
+        const roomPlayersRef = ref(db, `rooms/${currentRoom}/players`);
+        const myPlayerRef = ref(db, `rooms/${currentRoom}/players/${myRole}`);
+        onDisconnect(myPlayerRef).remove();
 
-        onValue(ref(db, `rooms/${currentRoom}/players/${myPlayerId}/stink`), s => { if(s.val() && !isStinking) applyStink(); });
-        onValue(ref(db, `rooms/${currentRoom}/players/${myPlayerId}/hacked`), s => { if(s.val() && !isHacked) applyHack(); });
+        onValue(ref(db, `rooms/${currentRoom}/players/${myRole}/stink`), s => { if(s.val() && !isStinking) applyStink(); });
+        onValue(ref(db, `rooms/${currentRoom}/players/${myRole}/hacked`), s => { if(s.val() && !isHacked) applyHack(); });
 
         setInterval(() => {
-          update(pRef, {
+          update(myPlayerRef, {
             p: document.getElementById('rig').getAttribute('position'),
             r: document.getElementById('camera').getAttribute('rotation'),
             hp: health, 
@@ -229,55 +214,29 @@
           });
         }, 50);
 
-        onValue(ref(db, `rooms/${currentRoom}/players`), (snap) => {
-          const players = snap.val();
-          if(!players) return;
-          
-          // ลบตัวละครที่ออกไปแล้ว
-          const container = document.getElementById('other-players');
-          container.innerHTML = "";
-
-          for (let id in players) {
-            if (id === myPlayerId) {
-              health = players[id].hp; document.getElementById('hp-text').innerText = Math.max(0, Math.floor(health));
-              if (health <= 0) {
-                 health = (role==='P3'?300:100);
-                 update(pRef, {hp: health, stink: false, hacked: false});
+        onValue(roomPlayersRef, (snap) => {
+          const players = snap.val() || {};
+          // เช็คตัวละครหลัก 3 Role ตาม v3.4.0
+          ['P1','P2','P3'].forEach(id => {
+            const ent = document.getElementById('player-' + id);
+            if (id === myRole) {
+              health = (players[id] && players[id].hp) ? players[id].hp : health;
+              document.getElementById('hp-text').innerText = Math.max(0, Math.floor(health));
+              if (health <= 0) update(myPlayerRef, {hp: (role==='P3'?300:100), stink: false, hacked: false});
+            } else if (players[id]) {
+              ent.setAttribute('visible', players[id].hp > 0);
+              ent.setAttribute('position', players[id].p);
+              ent.setAttribute('rotation', {x: 0, y: players[id].r.y, z: 0});
+              if(players[id].skin === 'TANK') {
+                const m = ent.querySelector('#player-P3-model');
+                if(m.getAttribute('gltf-model') !== players[id].tankType) m.setAttribute('gltf-model', players[id].tankType);
+              } else {
+                ent.querySelector('a-image').setAttribute('src', players[id].skin);
               }
             } else {
-              // สร้างตัวละครคนอื่นในห้อง
-              let pData = players[id];
-              let newP = document.createElement('a-entity');
-              newP.setAttribute('position', pData.p);
-              newP.setAttribute('rotation', {x: 0, y: pData.r.y, z: 0});
-              
-              if(pData.skin === 'TANK') {
-                let model = document.createElement('a-entity');
-                model.setAttribute('gltf-model', pData.tankType);
-                model.setAttribute('scale', '1.5 1.5 1.5');
-                model.setAttribute('position', '0 -1.5 0');
-                model.setAttribute('rotation', '0 180 0');
-                newP.appendChild(model);
-              } else {
-                let img = document.createElement('a-image');
-                img.setAttribute('src', pData.skin);
-                img.setAttribute('width', '4');
-                img.setAttribute('height', '4');
-                img.setAttribute('position', '0 2 0');
-                newP.appendChild(img);
-              }
-              
-              let box = document.createElement('a-box');
-              box.setAttribute('class', 'targetable');
-              box.dataset.id = id;
-              box.setAttribute('opacity', '0');
-              box.setAttribute('width', '4');
-              box.setAttribute('height', '5');
-              newP.appendChild(box);
-              
-              container.appendChild(newP);
+              ent.setAttribute('visible', false);
             }
-          }
+          });
         });
         initJoystick();
       }
@@ -285,16 +244,16 @@
       function applyStink() {
         isStinking = true; document.getElementById('stink-overlay').style.display = 'block';
         let d = 5; let itv = setInterval(() => {
-          health -= 5; update(ref(db, `rooms/${currentRoom}/players/${myPlayerId}`), {hp: health});
-          if(--d <= 0) { clearInterval(itv); isStinking = false; document.getElementById('stink-overlay').style.display = 'none'; update(ref(db, `rooms/${currentRoom}/players/${myPlayerId}`), {stink: false}); }
+          health -= 5; update(ref(db, `rooms/${currentRoom}/players/${myRole}`), {hp: health});
+          if(--d <= 0) { clearInterval(itv); isStinking = false; document.getElementById('stink-overlay').style.display = 'none'; update(ref(db, `rooms/${currentRoom}/players/${myRole}`), {stink: false}); }
         }, 1000);
       }
 
       function applyHack() {
         isHacked = true; document.getElementById('hack-overlay').style.display = 'block';
         let d = 10; let itv = setInterval(() => {
-          if(d % 3 === 0) { health -= 12; update(ref(db, `rooms/${currentRoom}/players/${myPlayerId}`), {hp: health}); }
-          if(--d <= 0) { clearInterval(itv); isHacked = false; document.getElementById('hack-overlay').style.display = 'none'; update(ref(db, `rooms/${currentRoom}/players/${myPlayerId}`), {hacked: false}); }
+          if(d % 3 === 0) { health -= 12; update(ref(db, `rooms/${currentRoom}/players/${myRole}`), {hp: health}); }
+          if(--d <= 0) { clearInterval(itv); isHacked = false; document.getElementById('hack-overlay').style.display = 'none'; update(ref(db, `rooms/${currentRoom}/players/${myRole}`), {hacked: false}); }
         }, 1000);
       }
 
@@ -332,5 +291,5 @@
       }
     </script>
   </body>
-  </html>
-        
+                                                                       </html>
+          
