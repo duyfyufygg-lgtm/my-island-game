@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Island Survival v2.0.2 - Boss Alert & P2 Buff</title>
+    <title>Island Survival v2.0.4 - T-Rex Animation & Balance Update</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.2.0/dist/aframe-extras.min.js"></script>
@@ -11,11 +11,13 @@
     <style>
       body { margin: 0; overflow: hidden; background: #000; font-family: sans-serif; touch-action: none; }
       #main-menu { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; background: #000; z-index: 1000; color: white; text-align: center; }
+      #tank-menu { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; background: rgba(0,0,0,0.9); z-index: 1100; color: white; text-align: center; }
       .skin-container { display: flex; gap: 10px; margin: 15px 0; flex-wrap: wrap; justify-content: center; max-width: 90%; }
       .skin-btn { width: 60px; height: 60px; border: 3px solid #fff; border-radius: 10px; cursor: pointer; overflow: hidden; }
       .skin-btn.active { border-color: #00ffcc; box-shadow: 0 0 15px #00ffcc; }
       .skin-btn img { width: 100%; height: 100%; object-fit: cover; }
       .role-btn { padding: 12px; margin: 5px; width: 220px; border-radius: 10px; border: 2px solid #fff; background: #333; color: #fff; font-weight: bold; font-size: 16px; cursor: pointer; }
+      .tank-select-btn { padding: 20px; width: 250px; background: #ff9900; border: 3px solid #fff; border-radius: 15px; font-size: 20px; font-weight: bold; cursor: pointer; color: black; }
       #ui-layer { position: absolute; top: 15px; left: 15px; z-index: 999; color: #fff; pointer-events: none; text-shadow: 2px 2px #000; }
       #touch-area { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 500; }
       #controls-ui { position: absolute; bottom: 0; left: 0; width: 100%; height: 100%; z-index: 998; pointer-events: none; }
@@ -23,16 +25,14 @@
       .fire-btn { position: absolute; bottom: 50px; right: 40px; width: 100px; height: 100px; border-radius: 50%; background: #ff4444; color: white; border: 4px solid #fff; pointer-events: auto; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: bold; z-index: 1001; }
       .hidden { display: none !important; }
       #boss-announce { position: absolute; top: 50px; width: 100%; text-align: center; color: #ff0000; font-size: 30px; font-weight: bold; text-shadow: 3px 3px #000; z-index: 2000; pointer-events: none; }
-      #boss-timer-msg { position: absolute; top: 90px; width: 100%; text-align: center; color: #ffff00; font-size: 20px; font-weight: bold; text-shadow: 2px 2px #000; z-index: 2000; pointer-events: none; }
     </style>
   </head>
   <body>
 
     <div id="boss-announce" class="hidden">GIANT BOSS 67 ปรากฏตัวแล้ว!</div>
-    <div id="boss-timer-msg" class="hidden">BOSS กำลังจะเกิดใน 30 วินาที! เตรียมตัว!</div>
 
     <div id="main-menu">
-      <h1 style="color: #00ffcc; margin-bottom: 5px;">เกาะมหาสนุก v2.0.2</h1>
+      <h1 style="color: #00ffcc;">เกาะมหาสนุก v2.0.4</h1>
       <p>1. เลือกสกิน</p>
       <div class="skin-container">
         <div class="skin-btn active" onclick="selectSkin('#imgRed', this)"><img src="jjs.png"></div>
@@ -41,30 +41,45 @@
         <div class="skin-btn" onclick="selectSkin('#imgSparcy', this)"><img src="Sparcy.png"></div>
         <div class="skin-btn" onclick="selectSkin('#img67', this)"><img src="67.png"></div>
       </div>
-      <p>2. เลือกอาชีพ</p>
-      <button class="role-btn" onclick="startGame('P1')">มือปืน (P1)</button>
-      <button class="role-btn" onclick="startGame('P2')">มือขวาน (P2 - วิ่งไว)</button>
-      <button class="role-btn" onclick="startGame('P3')">แท่งน้ำ (P3)</button>
+      <p>2. เลือกสายการเล่น</p>
+      <button class="role-btn" onclick="startGame('P1')">มือปืน (ATK 50)</button>
+      <button class="role-btn" onclick="startGame('P2')">มือขวาน (ATK 35 - ไวมาก)</button>
+      <button class="role-btn" onclick="openTankMenu()">สายแทงค์ (ATK 15 - T-Rex)</button>
+    </div>
+
+    <div id="tank-menu" class="hidden">
+      <h2 style="color: #ff9900;">เลือกสกินสายแทงค์ (ถึกสุด/ตีเบาสุด)</h2>
+      <div class="skin-container">
+        <div class="skin-btn active" style="width: 150px; height: 150px;"><img src="T-Rex_preview.png" alt="T-Rex Skin"></div>
+      </div>
+      <button class="tank-select-btn" onclick="startGame('P3')">เข้าเกมด้วย T-Rex</button>
+      <br>
+      <button style="color: white; background: none; border: none; cursor: pointer;" onclick="closeTankMenu()">กลับหน้าหลัก</button>
     </div>
 
     <div id="ui-layer" class="hidden">
       <div id="my-id-text" style="color:gold; font-size:20px;"></div>
-      <div>เลือดเรา: <span id="hp-text">100</span></div>
+      <div>HP ของเรา: <span id="hp-text">100</span></div>
       <div id="boss-hp-ui" class="hidden" style="color: #ff4444;">เลือด BOSS: <span id="boss-hp-text">3000</span></div>
     </div>
 
     <div id="touch-area" class="hidden"></div>
     <div id="controls-ui" class="hidden">
       <div id="joystick-zone"></div>
-      <div id="shoot-btn" class="fire-btn">โจมตี!!</div>
+      <div id="shoot-btn" class="fire-btn">ATTACK!</div>
     </div>
 
     <a-scene vr-mode-ui="enabled: false" ar-mode-ui="enabled: false" renderer="colorManagement: true;">
       <a-assets>
         <a-asset-item id="gunModel" src="asd.glb"></a-asset-item>
         <a-asset-item id="axeModel" src="fps.glb"></a-asset-item> 
+        <a-asset-item id="tankModel" src="T-Rex.glb"></a-asset-item>
         <a-asset-item id="islandModel" src="city.glb"></a-asset-item>
-        <img id="imgRed" src="jjs.png"><img id="imgBlue" src="jjkl.png"><img id="imgHerta" src="The Herta.png"><img id="imgSparcy" src="Sparcy.png"><img id="img67" src="67.png">
+        <img id="imgRed" src="jjs.png">
+        <img id="imgBlue" src="jjkl.png">
+        <img id="imgHerta" src="The Herta.png">
+        <img id="imgSparcy" src="Sparcy.png">
+        <img id="img67" src="67.png">
       </a-assets>
 
       <a-sky color="#87CEEB"></a-sky>
@@ -74,21 +89,15 @@
       <a-entity id="rig" position="0 0 0">
         <a-entity id="camera" camera position="0 1.6 0">
           <a-entity id="weapon-P1" gltf-model="#gunModel" position="0.3 -0.4 -0.6" rotation="0 -10 0" scale="0.4 0.4 0.4" visible="false"></a-entity>
-          
           <a-entity id="weapon-P2" position="0 0 0" visible="false">
-             <a-entity id="axe-model-inner"
-                       gltf-model="#axeModel" 
-                       position="0 -1.4 -1.2" 
-                       rotation="0 180 0" 
-                       scale="1.2 1.2 1.2"
-                       animation-mixer="clip: idle; loop: repeat; timeScale: 1; crossFadeDuration: 0.2;">
-             </a-entity>
+             <a-entity id="axe-model-inner" gltf-model="#axeModel" position="0 -1.4 -1.2" rotation="0 180 0" scale="1.2 1.2 1.2" animation-mixer="clip: idle; loop: repeat;"></a-entity>
           </a-entity>
-          
           <a-entity id="weapon-P3" gltf-model="#gunModel" position="0.3 -0.4 -0.6" rotation="0 -10 0" scale="0.4 0.4 0.4" visible="false"></a-entity>
           <a-entity id="cursor-visual" position="0 0 -1" geometry="primitive: ring; radiusInner: 0.012; radiusOuter: 0.018" material="color: #00ff00; shader: flat; opacity: 0.8"></a-entity>
         </a-entity>
+        
         <a-image id="my-skin-display" src="#imgRed" width="4" height="4" position="0 2 0"></a-image>
+        <a-entity id="my-tank-model" gltf-model="#tankModel" scale="1.5 1.5 1.5" position="0 -1.5 0" visible="false" animation-mixer="clip: idle; loop: repeat;"></a-entity>
       </a-entity>
 
       <a-entity id="boss-67" visible="false">
@@ -99,7 +108,10 @@
 
       <a-entity id="player-P1" visible="false"><a-image src="#imgRed" width="4" height="4" position="0 2 0"></a-image><a-box class="targetable" data-id="P1" opacity="0" width="4" height="5" depth="1" position="0 2 0"></a-box></a-entity>
       <a-entity id="player-P2" visible="false"><a-image src="#imgRed" width="4" height="4" position="0 2 0"></a-image><a-box class="targetable" data-id="P2" opacity="0" width="4" height="5" depth="1" position="0 2 0"></a-box></a-entity>
-      <a-entity id="player-P3" visible="false"><a-image src="#imgRed" width="4" height="4" position="0 2 0"></a-image><a-box class="targetable" data-id="P3" opacity="0" width="4" height="5" depth="1" position="0 2 0"></a-box></a-entity>
+      <a-entity id="player-P3" visible="false">
+         <a-entity id="player-P3-model" gltf-model="#tankModel" scale="1.5 1.5 1.5" position="0 -1.5 0" animation-mixer="clip: idle; loop: repeat;"></a-entity>
+         <a-box class="targetable" data-id="P3" opacity="0" width="5" height="6" depth="3" position="0 1.5 0"></a-box>
+      </a-entity>
     </a-scene>
 
     <script type="module">
@@ -110,8 +122,8 @@
       const app = initializeApp(firebaseConfig);
       const db = getDatabase(app);
 
-      let health = 100, myRole = "", mySkin = "#imgRed", yaw = 0, attackDistance = 100;
-      let moveSpeed = 0.3; // Default speed
+      let health = 100, myRole = "", mySkin = "#imgRed", yaw = 0, attackDistance = 100, moveSpeed = 0.3;
+      let isMoving = false;
 
       window.selectSkin = function(skinId, btn) {
         mySkin = skinId;
@@ -120,72 +132,37 @@
         document.getElementById('my-skin-display').setAttribute('src', skinId);
       }
 
-      // Camera Touch Control
+      window.openTankMenu = function() { document.getElementById('tank-menu').classList.remove('hidden'); }
+      window.closeTankMenu = function() { document.getElementById('tank-menu').classList.add('hidden'); }
+
       const touchArea = document.getElementById('touch-area');
       let isDragging = false, lastX = 0;
       touchArea.addEventListener('touchstart', e => { isDragging = true; lastX = e.touches[0].clientX; });
       touchArea.addEventListener('touchmove', e => {
         if (!isDragging) return;
-        let deltaX = e.touches[0].clientX - lastX;
-        lastX = e.touches[0].clientX;
-        yaw -= deltaX * 0.25;
-        document.getElementById('camera').setAttribute('rotation', `0 ${yaw} 0`);
+        let deltaX = e.touches[0].clientX - lastX; lastX = e.touches[0].clientX;
+        yaw -= deltaX * 0.25; document.getElementById('camera').setAttribute('rotation', `0 ${yaw} 0`);
       });
       touchArea.addEventListener('touchend', () => { isDragging = false; });
-
-      // BOSS SYSTEM v2
-      function announcePreSpawn() {
-        const timerMsg = document.getElementById('boss-timer-msg');
-        timerMsg.classList.remove('hidden');
-        setTimeout(() => {
-          timerMsg.classList.add('hidden');
-          spawnBoss();
-        }, 30000); // แจ้งเตือนล่วงหน้า 30 วิ
-      }
-
-      function spawnBoss() {
-        const randomX = (Math.random() - 0.5) * 20; 
-        const randomZ = -(Math.random() * 20 + 15);
-        update(ref(db, 'world/boss'), {
-          hp: 3000, pos: {x: randomX, y: -1.5, z: randomZ}, active: true
-        });
-        showAnnouncement("GIANT BOSS 67 ปรากฏตัวแล้ว!");
-      }
-
-      function showAnnouncement(text) {
-        const el = document.getElementById('boss-announce');
-        el.innerText = text;
-        el.classList.remove('hidden');
-        setTimeout(() => el.classList.add('hidden'), 5000);
-      }
-
-      onValue(ref(db, 'world/boss'), (snap) => {
-        const boss = snap.val();
-        const bossEl = document.getElementById('boss-67'), bossUI = document.getElementById('boss-hp-ui');
-        if (boss && boss.active && boss.hp > 0) {
-          bossEl.setAttribute('visible', true);
-          bossEl.setAttribute('position', `${boss.pos.x} ${boss.pos.y} ${boss.pos.z}`);
-          bossUI.classList.remove('hidden');
-          document.getElementById('boss-hp-text').innerText = boss.hp;
-        } else {
-          bossEl.setAttribute('visible', false);
-          bossUI.classList.add('hidden');
-        }
-      });
-
-      // Boss Cycle: 5 mins total (4:30 wait + 0:30 alert)
-      setInterval(announcePreSpawn, 300000); 
 
       window.startGame = function(role) {
         myRole = role;
         document.getElementById('main-menu').classList.add('hidden');
+        document.getElementById('tank-menu').classList.add('hidden');
         document.getElementById('ui-layer').classList.remove('hidden');
         document.getElementById('touch-area').classList.remove('hidden');
         document.getElementById('controls-ui').classList.remove('hidden');
-        
-        // P2 Speed Buff
-        moveSpeed = (role === 'P2' ? 0.6 : 0.3); 
-        document.getElementById('my-id-text').innerText = "อาชีพ: " + (role === 'P2' ? 'มือขวาน (วิ่งไว)' : 'ผู้เล่น');
+
+        if(role === 'P3') {
+           health = 300; 
+           moveSpeed = 0.4;
+           document.getElementById('my-skin-display').setAttribute('visible', false);
+           document.getElementById('my-tank-model').setAttribute('visible', true);
+           document.getElementById('my-id-text').innerText = "TANK (T-Rex) - HP 300";
+        } else {
+           moveSpeed = (role === 'P2' ? 0.6 : 0.3);
+           document.getElementById('my-id-text').innerText = "CLASS: " + (role === 'P2' ? 'มือขวาน' : 'มือปืน');
+        }
         
         document.querySelectorAll('[id^="weapon-"]').forEach(w => w.setAttribute('visible', false));
         const activeWeapon = document.getElementById('weapon-' + role);
@@ -193,13 +170,15 @@
           activeWeapon.setAttribute('visible', true);
           window.currentWeapon = activeWeapon;
           if(role === 'P2') attackDistance = 12;
+          if(role === 'P3') attackDistance = 10;
         }
 
         setInterval(() => {
           update(ref(db, 'players/' + myRole), {
             p: document.getElementById('rig').getAttribute('position'),
             r: document.getElementById('camera').getAttribute('rotation'),
-            hp: health, skin: mySkin
+            hp: health, skin: (role === 'P3' ? 'TANK' : mySkin),
+            m: isMoving 
           });
         }, 50);
 
@@ -209,14 +188,23 @@
             if (id === myRole) {
               health = players[id].hp;
               document.getElementById('hp-text').innerText = health;
-              if (health <= 0) { update(ref(db, 'players/'+myRole), {hp:100}); }
+              if (health <= 0) { update(ref(db, 'players/'+myRole), {hp: (role==='P3'?300:100)}); }
             } else {
               const ent = document.getElementById('player-' + id);
               if (ent) {
                 ent.setAttribute('visible', players[id].hp > 0);
                 ent.setAttribute('position', players[id].p);
                 ent.setAttribute('rotation', players[id].r);
-                ent.querySelector('a-image').setAttribute('src', players[id].skin);
+                if(players[id].skin !== 'TANK') {
+                  ent.querySelector('a-image').setAttribute('src', players[id].skin);
+                } else {
+                  const tankModelOther = document.getElementById('player-P3-model');
+                  if (players[id].m) {
+                    tankModelOther.setAttribute('animation-mixer', 'clip: walk; loop: repeat;');
+                  } else {
+                    tankModelOther.setAttribute('animation-mixer', 'clip: idle; loop: repeat;');
+                  }
+                }
               }
             }
           }
@@ -224,21 +212,22 @@
         initJoystick();
       }
 
-      // Attack with Animation Logic
       document.getElementById('shoot-btn').addEventListener('touchstart', (e) => {
         e.preventDefault();
-        if(!window.currentWeapon) return;
-
-        const modelInner = document.getElementById('axe-model-inner');
-        if(myRole === 'P2' && modelInner) {
-          // สลับไปเล่นท่า Attack
-          modelInner.setAttribute('animation-mixer', 'clip: attack; loop: once; crossFadeDuration: 0.1;');
-          setTimeout(() => {
-            modelInner.setAttribute('animation-mixer', 'clip: idle; loop: repeat; crossFadeDuration: 0.2;');
-          }, 800); // ปรับเวลาตามความยาวแอนิเมชั่นขวาน
-        } else if(myRole !== 'P2') {
-          window.currentWeapon.setAttribute('position', '0.3 -0.4 -0.4');
-          setTimeout(() => window.currentWeapon.setAttribute('position', '0.3 -0.4 -0.6'), 60);
+        
+        if(myRole === 'P2') {
+          const modelInner = document.getElementById('axe-model-inner');
+          modelInner.setAttribute('animation-mixer', 'clip: attack; loop: once;');
+          setTimeout(() => modelInner.setAttribute('animation-mixer', 'clip: idle; loop: repeat;'), 800);
+        }
+        
+        if(myRole === 'P3') {
+           const myTank = document.getElementById('my-tank-model');
+           myTank.setAttribute('animation-mixer', 'clip: attack; loop: once;');
+           setTimeout(() => {
+              if(!isMoving) myTank.setAttribute('animation-mixer', 'clip: idle; loop: repeat;');
+              else myTank.setAttribute('animation-mixer', 'clip: walk; loop: repeat;');
+           }, 1000);
         }
 
         const camEl = document.getElementById('camera');
@@ -256,18 +245,12 @@
 
         if (intersects.length > 0) {
           const hitId = intersects[0].object.el.dataset.id;
-          const dmg = (myRole === 'P2' ? 35 : 20);
+          let dmg = (myRole === 'P1' ? 50 : (myRole === 'P2' ? 35 : 15));
 
           if (hitId === "BOSS") {
             onValue(ref(db, `world/boss/hp`), snap => {
               let currentHp = snap.val() || 0;
-              if (currentHp > 0) {
-                update(ref(db, `world/boss`), { hp: currentHp - dmg });
-                if (currentHp - dmg <= 0) {
-                   update(ref(db, `world/boss`), { active: false });
-                   showAnnouncement("GIANT BOSS 67 ถูกกำจัดแล้ว!");
-                }
-              }
+              if (currentHp > 0) update(ref(db, `world/boss`), { hp: currentHp - dmg });
             }, { onlyOnce: true });
           } else if (hitId !== myRole) {
             onValue(ref(db, `players/${hitId}/hp`), snap => {
@@ -278,9 +261,28 @@
         }
       });
 
+      // Boss Cycle
+      setInterval(() => {
+        const randomX = (Math.random() - 0.5) * 20; 
+        const randomZ = -(Math.random() * 20 + 15);
+        update(ref(db, 'world/boss'), { hp: 3000, pos: {x: randomX, y: -1.5, z: randomZ}, active: true });
+        const el = document.getElementById('boss-announce'); el.classList.remove('hidden');
+        setTimeout(() => el.classList.add('hidden'), 5000);
+      }, 300000);
+
+      onValue(ref(db, 'world/boss'), (snap) => {
+        const boss = snap.val();
+        const bossEl = document.getElementById('boss-67'), bossUI = document.getElementById('boss-hp-ui');
+        if (boss && boss.active && boss.hp > 0) {
+          bossEl.setAttribute('visible', true); bossEl.setAttribute('position', `${boss.pos.x} ${boss.pos.y} ${boss.pos.z}`);
+          bossUI.classList.remove('hidden'); document.getElementById('boss-hp-text').innerText = boss.hp;
+        } else { bossEl.setAttribute('visible', false); bossUI.classList.add('hidden'); }
+      });
+
       function initJoystick() {
         nipplejs.create({ zone: document.getElementById('joystick-zone'), mode: 'static', position: {left: '70px', bottom: '70px'}, color: 'white' })
         .on('move', (evt, data) => {
+          isMoving = true;
           const rig = document.querySelector('#rig'), cam = document.querySelector('#camera');
           let rot = cam.getAttribute('rotation').y * Math.PI / 180;
           let pos = rig.getAttribute('position');
@@ -289,9 +291,19 @@
           pos.x -= (Math.sin(rot) * moveF + Math.cos(rot) * moveS);
           pos.z -= (Math.cos(rot) * moveF - Math.sin(rot) * moveS);
           rig.setAttribute('position', pos);
+
+          if(myRole === 'P3') {
+             document.getElementById('my-tank-model').setAttribute('animation-mixer', 'clip: walk; loop: repeat;');
+          }
+        })
+        .on('end', () => {
+          isMoving = false;
+          if(myRole === 'P3') {
+             document.getElementById('my-tank-model').setAttribute('animation-mixer', 'clip: idle; loop: repeat;');
+          }
         });
       }
     </script>
   </body>
-        </html>
-                                                                                                                                                      
+          </html>
+        
