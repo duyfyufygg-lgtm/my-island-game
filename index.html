@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Island Survival - P2P CONNECTION</title>
+    <title>Island Survival - WAYFINDER EDITION</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.9.1/nipplejs.min.js"></script>
@@ -9,41 +9,37 @@
 
     <style>
       body { margin: 0; overflow: hidden; background: #000; touch-action: none; font-family: sans-serif; }
-      #lobby { position: fixed; inset: 0; background: #111; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; padding: 20px; }
-      input { padding: 10px; font-size: 18px; width: 80%; margin: 10px 0; border-radius: 8px; border: none; }
-      .btn { padding: 15px 30px; font-size: 20px; border-radius: 12px; border: none; cursor: pointer; font-weight: bold; width: 250px; margin: 5px; }
-      
+      #lobby { position: fixed; inset: 0; background: #1a1a1a; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; text-align: center; }
+      .btn { padding: 15px 30px; font-size: 20px; border-radius: 12px; border: 2px solid #fff; cursor: pointer; width: 280px; margin: 10px; font-weight: bold; }
       #ui-layer { position: fixed; inset: 0; pointer-events: none; z-index: 9000; }
       #joystick-zone { position: absolute; bottom: 40px; left: 40px; width: 150px; height: 150px; pointer-events: auto; background: rgba(255,255,255,0.1); border-radius: 50%; }
-      #shoot-btn { position: absolute; bottom: 60px; right: 60px; width: 100px; height: 100px; border-radius: 50%; background: red; border: 4px solid white; pointer-events: auto; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; box-shadow: 0 0 20px red; }
-      
-      #skin-select { position: absolute; top: 10px; right: 10px; pointer-events: auto; }
-      .skin-btn { padding: 8px; background: #222; color: #0f0; border: 1px solid #0f0; margin-bottom: 5px; font-size: 12px; display: block; width: 80px; }
-      #info { position: absolute; top: 10px; left: 10px; color: white; background: rgba(0,0,0,0.5); padding: 5px; font-size: 12px; }
+      #shoot-btn { position: absolute; bottom: 60px; right: 60px; width: 110px; height: 110px; border-radius: 50%; background: red; border: 4px solid white; pointer-events: auto; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 24px; box-shadow: 0 0 20px red; }
+      #skin-select { position: absolute; top: 20px; right: 20px; pointer-events: auto; display: flex; flex-direction: column; gap: 5px; }
+      .skin-opt { padding: 10px; background: #333; color: #ffff00; border: 1px solid #ffff00; border-radius: 5px; cursor: pointer; font-size: 14px; }
+      #status-msg { position: absolute; top: 20px; left: 20px; color: #0f0; background: rgba(0,0,0,0.6); padding: 10px; border-radius: 5px; font-weight: bold; }
       .hidden { display: none !important; }
     </style>
   </head>
   <body>
 
     <div id="lobby">
-      <h2 style="color:#00ffcc">P2P MULTIPLAYER</h2>
-      <div style="background:#222; padding:15px; border-radius:10px; width:90%; text-align:center;">
-        <p>ID ของคุณ (ส่งให้พี่ชาย):</p>
-        <p id="my-id" style="font-size:24px; color:#ff4d4d; font-weight:bold;">กำลังสร้าง ID...</p>
+      <h1 style="color:#ffff00">TRACKING WARRIOR</h1>
+      <div style="background:#000; padding:20px; border-radius:15px; margin-bottom:20px; border:2px solid #ffff00;">
+        <p>ID ของคุณ (ส่งให้พี่):</p>
+        <p id="my-id" style="font-size:32px; color:#ff4d4d; letter-spacing:2px; font-weight:bold;">สร้าง ID...</p>
       </div>
-      <input type="text" id="peer-id-input" placeholder="วาง ID พี่ชายที่นี่">
-      <button class="btn" style="background:#4d94ff" onclick="connectToPeer()">CONNECT TO PEER</button>
-      <hr style="width:100%; margin:20px 0; opacity:0.2">
-      <button class="btn" style="background:#ff4d4d" onclick="startSolo()">เล่นคนเดียว (Solo)</button>
+      <input type="text" id="target-id" placeholder="ใส่ ID ของพี่ชาย" style="padding:15px; width:250px; font-size:18px; border-radius:10px; margin-bottom:10px; border:none;">
+      <button class="btn" style="background:#4d94ff" onclick="joinGame()">เชื่อมต่อหาพี่ชาย</button>
+      <button class="btn" style="background:#333" onclick="startIsland()">รอพี่ชายเข้ามาจอย</button>
     </div>
 
     <div id="ui-layer" class="hidden">
-      <div id="info">สถานะ: รอการเชื่อมต่อ...</div>
+      <div id="status-msg">ระบบค้นหาพี่ชาย: เปิดใช้งาน</div>
       <div id="skin-select">
-        <button class="skin-btn" onclick="setSkin('jjs.png')">Skin 1</button>
-        <button class="skin-btn" onclick="setSkin('jjkl.png')">Skin 2</button>
-        <button class="skin-btn" onclick="setSkin('The Herta.png')">Skin 3</button>
-        <button class="skin-btn" onclick="setSkin('Sparcy.png')">Skin 4</button>
+        <div class="skin-opt" onclick="updateSkin('jjs.png')">SKIN 1</div>
+        <div class="skin-opt" onclick="updateSkin('jjkl.png')">SKIN 2</div>
+        <div class="skin-opt" onclick="updateSkin('The Herta.png')">SKIN 3</div>
+        <div class="skin-opt" onclick="updateSkin('Sparcy.png')">SKIN 4</div>
       </div>
       <div id="joystick-zone"></div>
       <div id="shoot-btn">FIRE!!</div>
@@ -53,85 +49,85 @@
       <a-assets>
         <a-asset-item id="gun" src="asd.glb"></a-asset-item>
         <a-asset-item id="city" src="city.glb"></a-asset-item>
-        <img id="s1" src="jjs.png">
+        <img id="def-skin" src="jjs.png">
       </a-assets>
 
       <a-sky color="#87CEEB"></a-sky>
       <a-entity gltf-model="#city" position="0 -1.5 -30" scale="0.1 0.1 0.1"></a-entity>
-      <a-plane rotation="-90 0 0" width="1000" height="1000" color="#333"></a-plane>
+      <a-plane rotation="-90 0 0" width="1000" height="1000" color="#1a1a1a"></a-plane>
 
-      <a-entity id="rig" position="0 0 0">
+      <a-entity id="me" position="0 0 0">
         <a-entity id="cam" camera position="0 1.6 0" look-controls="magicWindowTrackingEnabled:false; touchEnabled:true;">
-          <a-entity id="gun-model" gltf-model="#gun" position="0.3 -0.4 -0.6" scale="0.4 0.4 0.4"></a-entity>
+          <a-entity id="fps-gun" gltf-model="#gun" position="0.3 -0.4 -0.6" scale="0.4 0.4 0.4"></a-entity>
           <a-entity cursor position="0 0 -1" geometry="primitive:ring; radiusInner:0.01; radiusOuter:0.015" material="color:lime; shader:flat"></a-entity>
         </a-entity>
-        <a-image id="my-skin" src="#s1" width="2" height="2" position="0 1 0"></a-image>
+        <a-image id="my-img" src="#def-skin" width="2" height="2" position="0 1 0"></a-image>
       </a-entity>
 
-      <a-entity id="other-player" visible="false">
-        <a-sphere radius="0.2" position="0 2.2 0" color="blue"></a-sphere>
-        <a-image id="other-skin" src="#s1" width="2" height="2" position="0 1 0"></a-image>
+      <a-entity id="brother" visible="false">
+        <a-entity id="arrow" position="0 3.5 0" animation="property: position; to: 0 3.8 0; dir: alternate; dur: 500; loop: true">
+            <a-cone radius-bottom="0.2" radius-top="0" height="0.4" rotation="180 0 0" material="color: #ffff00; emissive: #ffff00; emissiveIntensity: 2"></a-cone>
+            <a-box width="0.1" height="0.3" depth="0.1" position="0 0.3 0" material="color: #ffff00"></a-box>
+        </a-entity>
+        <a-sphere radius="0.2" position="0 2.3 0" color="red"></a-sphere>
+        <a-image id="bro-skin" src="#def-skin" width="2" height="2" position="0 1 0"></a-image>
       </a-entity>
     </a-scene>
 
     <script>
-      let peer, conn;
-      const myIdDisplay = document.getElementById('my-id');
-      const info = document.getElementById('info');
-      const shootSound = new Audio("https://actions.google.com/sounds/v1/weapons/fire_arm_gunshot.ogg");
+      let myPeer, conn;
+      const fireSnd = new Audio("https://actions.google.com/sounds/v1/weapons/fire_arm_gunshot.ogg");
 
-      // 1. เริ่มต้นระบบ Peer
-      peer = new Peer();
-      peer.on('open', id => myIdDisplay.innerText = id);
+      myPeer = new Peer();
+      myPeer.on('open', id => document.getElementById('my-id').innerText = id);
 
-      // รับการเชื่อมต่อจากคนอื่น
-      peer.on('connection', c => {
+      myPeer.on('connection', c => {
         conn = c;
-        setupNetwork();
-        startSolo(); 
-        info.innerText = "สถานะ: พี่ชายเข้ามาแล้ว!";
+        setupSync();
+        startIsland();
+        document.getElementById('status-msg').innerText = "พี่ชายออนไลน์แล้ว! (ดูที่ลูกศรเหลือง)";
       });
 
-      function connectToPeer() {
-        const peerId = document.getElementById('peer-id-input').value;
-        conn = peer.connect(peerId);
-        setupNetwork();
-        startSolo();
-        info.innerText = "สถานะ: เชื่อมต่อกับพี่ชายแล้ว!";
+      function joinGame() {
+        const id = document.getElementById('target-id').value;
+        if(!id) return alert("กรุณาใส่ ID");
+        conn = myPeer.connect(id);
+        setupSync();
+        startIsland();
       }
 
-      function setupNetwork() {
+      function setupSync() {
         conn.on('data', data => {
           if(data.type === 'move') {
-            const other = document.getElementById('other-player');
-            other.setAttribute('visible', 'true');
-            other.setAttribute('position', data.pos);
-            other.setAttribute('rotation', data.rot);
-            if(data.skin) document.getElementById('other-skin').setAttribute('src', data.skin);
+            const bro = document.getElementById('brother');
+            bro.setAttribute('visible', 'true');
+            bro.setAttribute('position', data.pos);
+            bro.setAttribute('rotation', data.rot);
+            document.getElementById('bro-skin').setAttribute('src', data.skin);
           }
         });
       }
 
-      function startSolo() {
+      function startIsland() {
         document.getElementById('lobby').classList.add('hidden');
         document.getElementById('ui-layer').classList.remove('hidden');
         initJoystick();
-        // ส่งตำแหน่งของเราให้พี่ชายทุกๆ 50ms
+        
         setInterval(() => {
           if(conn && conn.open) {
-            const rig = document.getElementById('rig');
+            const me = document.getElementById('me');
             conn.send({
               type: 'move',
-              pos: rig.getAttribute('position'),
-              rot: rig.getAttribute('rotation'),
-              skin: document.getElementById('my-skin').getAttribute('src')
+              pos: me.getAttribute('position'),
+              rot: me.getAttribute('rotation'),
+              skin: document.getElementById('my-img').getAttribute('src')
             });
           }
         }, 50);
       }
 
-      function setSkin(file) {
-        document.getElementById('my-skin').setAttribute('src', file);
+      function updateSkin(file) {
+        document.getElementById('my-img').setAttribute('src', file);
       }
 
       function initJoystick() {
@@ -139,35 +135,33 @@
           zone: document.getElementById('joystick-zone'),
           mode: 'static', position: { left: '75px', bottom: '75px' }, color: 'white', size: 120
         }).on('move', (evt, data) => {
-          const rig = document.getElementById('rig');
+          const me = document.getElementById('me');
           const cam = document.getElementById('cam');
-          const rotY = cam.getAttribute('rotation').y * Math.PI / 180;
-          const pos = rig.getAttribute('position');
-          const spd = 0.2;
-          const fwd = Math.sin(data.angle.radian) * spd;
-          const side = Math.cos(data.angle.radian) * spd;
-          pos.x -= (Math.sin(rotY) * fwd + Math.cos(rotY) * side);
-          pos.z -= (Math.cos(rotY) * fwd - Math.sin(rotY) * side);
-          rig.setAttribute('position', pos);
+          const ry = cam.getAttribute('rotation').y * Math.PI / 180;
+          const pos = me.getAttribute('position');
+          const sp = 0.25;
+          const f = Math.sin(data.angle.radian) * sp;
+          const s = Math.cos(data.angle.radian) * sp;
+          pos.x -= (Math.sin(ry) * f + Math.cos(ry) * s);
+          pos.z -= (Math.cos(ry) * f - Math.sin(ry) * s);
+          me.setAttribute('position', pos);
         });
       }
 
-      // ระบบยิง
       document.getElementById('shoot-btn').addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        shootSound.currentTime = 0; shootSound.play();
-        const gun = document.getElementById('gun-model');
+        e.preventDefault(); fireSnd.currentTime = 0; fireSnd.play();
+        const gun = document.getElementById('fps-gun');
         gun.setAttribute('position', '0.3 -0.4 -0.5');
         setTimeout(() => gun.setAttribute('position', '0.3 -0.4 -0.6'), 60);
       });
 
-      // ล็อคหน้าจอไม่ให้มุดดิน
+      // ล็อคหน้าจอห้ามมุดดิน
       setInterval(() => {
         const cam = document.getElementById('cam');
-        const rot = cam.getAttribute('rotation');
-        cam.setAttribute('rotation', {x: 0, y: rot.y, z: 0});
+        const r = cam.getAttribute('rotation');
+        cam.setAttribute('rotation', {x: 0, y: r.y, z: 0});
       }, 10);
     </script>
   </body>
-          </html>
+  </html>
       
