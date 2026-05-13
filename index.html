@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Island Survival - The Herta Edition</title>
+    <title>The Herta Survival - DOT Edition</title>
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@v6.1.1/dist/aframe-extras.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.9.1/nipplejs.min.js"></script>
@@ -11,78 +11,58 @@
     <style>
         body { margin: 0; overflow: hidden; font-family: sans-serif; background: #000; }
         #ui { position: absolute; top: 10px; left: 10px; z-index: 100; color: white; text-shadow: 2px 2px black; pointer-events: none; }
-        .menu { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.9); padding: 25px; border-radius: 15px; text-align: center; color: white; z-index: 200; border: 2px solid #00ffcc; }
+        .menu { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.95); padding: 30px; border-radius: 15px; text-align: center; color: white; z-index: 200; border: 2px solid #00ffcc; }
         .hidden { display: none !important; }
-        button { padding: 12px 24px; margin: 8px; cursor: pointer; font-weight: bold; border-radius: 8px; border: none; transition: 0.2s; }
-        button:hover { transform: scale(1.05); opacity: 0.9; }
-        .btn-atk { position: absolute; bottom: 20px; right: 20px; width: 90px; height: 90px; border-radius: 50%; background: radial-gradient(#ff0000, #990000); color: white; z-index: 100; border: 4px solid white; }
+        button { padding: 12px 24px; margin: 8px; cursor: pointer; font-weight: bold; border-radius: 8px; border: none; font-size: 16px; }
+        #confirm-btn { background: #00ffcc; color: #000; width: 100%; margin-top: 15px; }
+        
+        /* เอฟเฟคหน้าจอ */
+        #hit-effect { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; pointer-events: none; z-index: 150; }
+        #hacked-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(150, 0, 255, 0.3); border: 15px solid purple; display: none; pointer-events: none; z-index: 140; animation: flash 0.2s infinite; }
+        #stink-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 255, 0, 0.2); border: 20px solid #4b5320; display: none; pointer-events: none; z-index: 140; animation: shake 0.3s infinite; }
+        
+        @keyframes flash { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.6; } }
+        @keyframes shake { 0% { transform: translate(1px, 1px); } 50% { transform: translate(-2px, -1px); } 100% { transform: translate(1px, 1px); } }
+
+        .btn-atk { position: absolute; bottom: 20px; right: 20px; width: 100px; height: 100px; border-radius: 50%; background: red; color: white; z-index: 100; border: 5px solid white; }
         #joy { position: absolute; bottom: 20px; left: 20px; width: 130px; height: 130px; z-index: 100; }
-        #hacker-fx { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(150, 0, 255, 0.4); pointer-events: none; z-index: 50; display: none; border: 10px solid purple; animation: flash 0.1s infinite; }
-        @keyframes flash { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.7; } }
     </style>
 </head>
 <body>
 
-    <div id="ui">
-        <h1 id="hp-display">HP: --</h1>
-        <p id="status">Connecting...</p>
-    </div>
+    <div id="ui"><h1 id="hp-display">HP: --</h1><p id="debuff-status"></p></div>
+    <div id="hit-effect"></div>
+    <div id="hacked-screen"></div>
+    <div id="stink-screen"></div>
 
     <div id="start-menu" class="menu">
-        <h2 style="color:#00ffcc;">THE HERTA SURVIVAL</h2>
-        <p>เลือกตัวละครที่ต้องการ:</p>
-        <button style="background:#a349a4; color:white;" onclick="joinGame('Speed')">Speed (Silver Wolf)</button>
-        <button style="background:#ed1c24; color:white;" onclick="joinGame('Atk')">Atk (T-Rex)</button>
-        <button style="background:#ff7f27; color:white;" onclick="joinGame('Tank')">Tank (ถังขยะ)</button>
+        <h2 style="color:#00ffcc;">THE HERTA GAME</h2>
+        <button onclick="selectRole('Speed', this)" style="background:#a349a4; color:white;">SPEED (Silver Wolf)</button>
+        <button onclick="selectRole('Atk', this)" style="background:#ed1c24; color:white;">ATK (T-Rex)</button>
+        <button onclick="selectRole('Tank', this)" style="background:#ff7f27; color:white;">TANK (ถังขยะ)</button>
+        <button id="confirm-btn" class="hidden" onclick="confirmJoin()">JOIN GAME</button>
     </div>
 
-    <div onclick="openAdmin()" style="position:absolute; bottom:0; right:0; width:30px; height:30px; opacity:0.1; z-index:10000; cursor:pointer;">.</div>
-
-    <div id="admin-login" class="menu hidden">
-        <h3>GOD ACCESS</h3>
-        <input type="password" id="admin-pass" placeholder="Password...">
-        <button onclick="checkAdmin()" style="background:#00ffcc;">LOGIN</button>
-        <button onclick="closeAdmin()">X</button>
-    </div>
-
-    <div id="admin-panel" class="hidden" style="position:absolute; top:10px; right:10px; background:rgba(0,0,0,0.9); padding:15px; border:2px solid #00ffcc; z-index:5000; color:white; border-radius:10px;">
-        <button onclick="toggleGhost()" style="width:100%; margin-bottom:5px;">โหมดล่องหน (Ghost)</button>
-        <button onclick="chaosHack()" style="width:100%; background:purple; color:white;">HACK ALL</button>
-    </div>
-
-    <div id="hacker-fx"></div>
     <div id="joy"></div>
     <button id="atk-btn" class="btn-atk hidden" onclick="attack()">ATK</button>
     
-    <a-scene shadow="type: pcfsoft">
+    <a-scene>
         <a-assets>
             <a-asset-item id="city-m" src="city.glb"></a-asset-item>
             <a-asset-item id="trex-m" src="T-Rex.glb"></a-asset-item>
             <a-asset-item id="bin-m" src="bin.glb"></a-asset-item>
-            <a-asset-item id="asd-m" src="asd.glb"></a-asset-item>
             <a-asset-item id="fae-m" src="fae.glb"></a-asset-item>
-            <a-asset-item id="fps-m" src="fps.glb"></a-asset-item>
-            
-            <img id="herta-img" src="The Herta.png">
-            <img id="the-img" src="the.png">
-            <img id="shop-img" src="Fetchingshop12.png">
-            <img id="jjs-img" src="jjs.png">
-            <img id="sparcy-img" src="Sparcy.png">
-            <img id="jjkl-img" src="jjkl.png">
-            <img id="s67-img" src="67.png">
+            <a-asset-item id="hand-m" src="asd.glb"></a-asset-item>
+            <img id="sky-img" src="the.png">
         </a-assets>
-
-        <a-sky src="#the-img"></a-sky> <a-entity gltf-model="#city-m" position="0 -1 0"></a-entity>
-        
-        <a-image src="#herta-img" position="0 5 -10" scale="5 5 5"></a-image>
-        <a-image src="#shop-img" position="5 3 -5" scale="2 2 2"></a-image>
-
+        <a-sky src="#sky-img"></a-sky>
+        <a-entity gltf-model="#city-m" position="0 -1 0"></a-entity>
         <a-entity id="camera-rig" position="0 1.6 0">
             <a-camera id="cam" look-controls="pointerLockEnabled: false">
-                <a-cursor id="cursor" color="cyan"></a-cursor>
+                <a-entity id="my-hand" gltf-model="#hand-m" position="0.3 -0.4 -0.5" rotation="0 180 0" visible="false"></a-entity>
+                <a-cursor color="cyan"></a-cursor>
             </a-camera>
         </a-entity>
-
         <a-entity id="players-container"></a-entity>
     </a-scene>
 
@@ -90,61 +70,78 @@
         import { initializeApp } from "firebase/app";
         import { getDatabase, ref, set, onValue, update, onDisconnect, get } from "firebase/database";
 
-        // *** อาจารย์ใช้ URL เดิมของอาจารย์ตรงนี้นะครับ ***
         const firebaseConfig = { databaseURL: "https://duyfyufygg-lgtm.github.io/my-island-game/" };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        let myId = "HERTA-" + Math.floor(Math.random() * 99999);
+        let myId = "ID-" + Math.floor(Math.random() * 9999);
         let myRole = "";
-        let hp = 100;
-        let isGhost = false;
         let moveData = { x: 0, z: 0 };
+        let dotTimer = null;
 
-        window.joinGame = (role) => {
-            myRole = role;
-            hp = (role === 'Tank') ? 300 : 100;
-            document.getElementById('start-menu').classList.add('hidden');
-            document.getElementById('atk-btn').classList.remove('hidden');
-            document.getElementById('status').innerText = "Status: ONLINE";
-
-            set(ref(db, 'server_herta/' + myId), {
-                id: myId, role, x: 0, y: 1.6, z: 0, hp,
-                hacked: false, isGhost: false, ry: 0,
-                // ผูกไฟล์โมเดลกับสายที่เลือก
-                model: (role === 'Tank' ? '#bin-m' : (role === 'Atk' ? '#trex-m' : '#asd-m'))
-            });
-            onDisconnect(ref(db, 'server_herta/' + myId)).remove();
+        window.selectRole = (role, btn) => {
+            window.selectedRole = role;
+            document.querySelectorAll('button').forEach(b => b.style.outline = "none");
+            btn.style.outline = "4px solid #00ffcc";
+            document.getElementById('confirm-btn').classList.remove('hidden');
         };
 
-        const manager = nipplejs.create({ zone: document.getElementById('joy'), mode: 'static', position: { left: '75px', bottom: '75px' }, color: 'cyan' });
-        manager.on('move', (e, d) => {
-            moveData.x = Math.cos(d.angle.radian) * d.force * 0.25;
-            moveData.z = -Math.sin(d.angle.radian) * d.force * 0.25;
-        });
-        manager.on('end', () => moveData = { x: 0, z: 0 });
+        window.confirmJoin = () => {
+            myRole = window.selectedRole;
+            let model = (myRole === 'Tank' ? '#bin-m' : (myRole === 'Atk' ? '#trex-m' : '#fae-m'));
+            document.getElementById('start-menu').classList.add('hidden');
+            document.getElementById('atk-btn').classList.remove('hidden');
+            document.getElementById('my-hand').setAttribute('visible', 'true');
 
+            set(ref(db, 'server_dot/' + myId), {
+                id: myId, role: myRole, x: 0, y: 1.6, z: 0, hp: (myRole === 'Tank' ? 350 : 100),
+                ry: 0, model: model, hacked: 0, stinking: 0 
+            });
+            onDisconnect(ref(db, 'server_dot/' + myId)).remove();
+        };
+
+        // ระบบ Damage Over Time (DOT)
         setInterval(() => {
             if (!myRole) return;
-            const rig = document.getElementById('camera-rig');
-            const cam = document.getElementById('cam');
-            let ry = cam.getAttribute('rotation').y * (Math.PI / 180);
-            rig.object3D.position.x += moveData.x * Math.cos(ry) + moveData.z * Math.sin(ry);
-            rig.object3D.position.z += -moveData.x * Math.sin(ry) + moveData.z * Math.cos(ry);
-            update(ref(db, 'server_herta/' + myId), { x: rig.object3D.position.x, z: rig.object3D.position.z, ry: cam.getAttribute('rotation').y });
-        }, 30);
+            get(ref(db, 'server_dot/' + myId)).then(s => {
+                if (!s.exists()) return;
+                let data = s.val();
+                let newHp = data.hp;
+                let updates = {};
 
-        onValue(ref(db, 'server_herta'), (snapshot) => {
+                // ถ้าโดนแฮ็ก (ดาเมจ 12 ทุก 1 วิ)
+                if (data.hacked > 0) {
+                    newHp -= 12;
+                    updates.hacked = data.hacked - 1;
+                }
+                // ถ้าโดนเหม็น (ดาเมจ 3 ทุก 1 วิ)
+                if (data.stinking > 0) {
+                    newHp -= 3;
+                    updates.stinking = data.stinking - 1;
+                }
+
+                if (newHp !== data.hp || Object.keys(updates).length > 0) {
+                    updates.hp = newHp;
+                    update(ref(db, 'server_dot/' + myId), updates);
+                }
+            });
+        }, 1000);
+
+        onValue(ref(db, 'server_dot'), (snapshot) => {
             const data = snapshot.val();
-            const container = document.getElementById('players-container');
-            if (!data) return;
+            if (!data || !data[myId]) return;
 
-            if (data[myId]) {
-                hp = data[myId].hp;
-                document.getElementById('hp-display').innerText = isGhost ? "HP: ∞ (GOD)" : "HP: " + hp;
-                document.getElementById('hacker-fx').style.display = data[myId].hacked ? 'block' : 'none';
-                if (hp <= 0 && !isGhost) { alert("You Died!"); location.reload(); }
-            }
+            const me = data[myId];
+            document.getElementById('hp-display').innerText = "HP: " + me.hp;
+            document.getElementById('hacked-screen').style.display = me.hacked > 0 ? 'block' : 'none';
+            document.getElementById('stink-screen').style.display = me.stinking > 0 ? 'block' : 'none';
+            
+            let statusTxt = "";
+            if(me.hacked > 0) statusTxt += `[HACKED: ${me.hacked}s] `;
+            if(me.stinking > 0) statusTxt += `[STINKY: ${me.stinking}s]`;
+            document.getElementById('debuff-status').innerText = statusTxt;
+
+            if (me.hp <= 0) { alert("Game Over!"); location.reload(); }
 
             Object.keys(data).forEach(id => {
                 if (id === myId) return;
@@ -154,54 +151,46 @@
                     el = document.createElement('a-entity');
                     el.setAttribute('id', id);
                     el.setAttribute('gltf-model', p.model);
-                    el.setAttribute('scale', p.role === 'Atk' ? '1.5 1.5 1.5' : '1 1 1');
-                    container.appendChild(el);
-                    
-                    let txt = document.createElement('a-text');
-                    txt.setAttribute('value', p.role); txt.setAttribute('align', 'center');
-                    txt.setAttribute('position', '0 2.5 0'); txt.setAttribute('color', '#00ffcc');
-                    el.appendChild(txt);
+                    document.getElementById('players-container').appendChild(el);
                 }
-                el.setAttribute('visible', !p.isGhost && p.hp > 0);
-                el.setAttribute('position', `${p.x} 0 ${p.z}`);
+                el.setAttribute('position', `${p.x} 0.5 ${p.z}`);
                 el.setAttribute('rotation', `0 ${p.ry} 0`);
             });
         });
 
         window.attack = () => {
+            const hand = document.getElementById('my-hand');
+            hand.setAttribute('animation', "property: position; to: 0.3 -0.4 -0.9; dur: 100; dir: alternate; loop: 2");
+
             const inter = document.querySelector('a-cursor').components.raycaster.intersections[0];
             if (inter && inter.object.el.id) {
                 const tid = inter.object.el.id;
-                get(ref(db, `server_herta/${tid}`)).then(s => {
+                get(ref(db, `server_dot/${tid}`)).then(s => {
                     if (s.exists()) {
-                        let dmg = (myRole === 'Atk') ? 30 : 12;
-                        update(ref(db, `server_herta/${tid}`), { hp: s.val().hp - dmg });
+                        let t = s.val();
+                        update(ref(db, `server_dot/${tid}`), { 
+                            hp: t.hp - (myRole === 'Atk' ? 20 : 5), // ดาเมจตั้งต้นตอนตี
+                            hacked: (myRole === 'Speed' ? 10 : t.hacked), // ติดแฮ็ก 10 วิ
+                            stinking: (myRole === 'Tank' ? 10 : t.stinking) // ติดเหม็น 10 วิ
+                        });
                     }
                 });
             }
         };
 
-        // --- ADMIN LOGIC ---
-        window.openAdmin = () => document.getElementById('admin-login').classList.remove('hidden');
-        window.closeAdmin = () => document.getElementById('admin-login').classList.add('hidden');
-        window.checkAdmin = () => {
-            if (document.getElementById('admin-pass').value === 'the-herta-game') {
-                document.getElementById('admin-login').classList.add('hidden');
-                document.getElementById('admin-panel').classList.remove('hidden');
-            }
-        };
-        window.toggleGhost = () => {
-            isGhost = !isGhost;
-            update(ref(db, `server_herta/${myId}`), { isGhost: isGhost, hp: 999999 });
-        };
-        window.chaosHack = () => {
-            get(ref(db, 'server_herta')).then(s => {
-                Object.keys(s.val()).forEach(id => {
-                    if(id !== myId) update(ref(db, `server_herta/${id}`), { hacked: true, hp: 1 });
-                });
-            });
-        };
+        // [Joystick & Movement Logic...]
+        const manager = nipplejs.create({ zone: document.getElementById('joy'), mode: 'static', position: { left: '70px', bottom: '70px' } });
+        manager.on('move', (e, d) => { moveData.x = Math.cos(d.angle.radian) * d.force * 0.2; moveData.z = -Math.sin(d.angle.radian) * d.force * 0.2; });
+        manager.on('end', () => moveData = { x: 0, z: 0 });
+        setInterval(() => {
+            if (!myRole) return;
+            const rig = document.getElementById('camera-rig');
+            const cam = document.getElementById('cam');
+            let ry = cam.getAttribute('rotation').y * (Math.PI / 180);
+            rig.object3D.position.x += moveData.x * Math.cos(ry) + moveData.z * Math.sin(ry);
+            rig.object3D.position.z += -moveData.x * Math.sin(ry) + moveData.z * Math.cos(ry);
+            update(ref(db, 'server_dot/' + myId), { x: rig.object3D.position.x, z: rig.object3D.position.z, ry: cam.getAttribute('rotation').y });
+        }, 30);
     </script>
 </body>
-    </html>
-        
+</html>
