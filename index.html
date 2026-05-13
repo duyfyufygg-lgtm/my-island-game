@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>The Herta Survival - Boss Revenge</title>
+    <title>The Herta Survival - FULL RESTORE</title>
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@v6.1.1/dist/aframe-extras.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.9.1/nipplejs.min.js"></script>
@@ -9,46 +9,59 @@
         { "imports": { "firebase/app": "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js", "firebase/database": "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js" } }
     </script>
     <style>
-        body { margin: 0; overflow: hidden; font-family: sans-serif; background: #000; }
-        #ui { position: absolute; top: 10px; left: 10px; z-index: 100; color: white; text-shadow: 2px 2px black; pointer-events: none; }
-        .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 200; background: rgba(0,0,0,0.85); color: white; }
-        .hidden { display: none !important; }
-        button { padding: 15px 30px; margin: 10px; cursor: pointer; font-weight: bold; border-radius: 10px; border: none; font-size: 18px; }
-        #confirm-btn { background: #00ffcc; color: black; box-shadow: 0 0 15px #00ffcc; }
+        body { margin: 0; overflow: hidden; font-family: sans-serif; background: #000; touch-action: none; }
         
-        /* เอฟเฟคจอ */
-        #stink-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 255, 0, 0.2); border: 20px solid #4b5320; display: none; pointer-events: none; z-index: 140; animation: shake 0.2s infinite; }
+        /* UI พื้นฐาน */
+        #game-ui { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 100; }
+        .stats { position: absolute; top: 10px; left: 10px; color: white; text-shadow: 2px 2px black; }
+        
+        /* เอฟเฟคหน้าจอ (เอากลับมาแล้ว!) */
+        #hacked-screen { position: absolute; width: 100%; height: 100%; background: rgba(150, 0, 255, 0.3); border: 15px solid purple; display: none; z-index: 90; animation: flash 0.3s infinite; pointer-events: none; }
+        #stink-screen { position: absolute; width: 100%; height: 100%; background: rgba(0, 255, 0, 0.2); border: 20px solid #4b5320; display: none; z-index: 90; animation: shake 0.2s infinite; pointer-events: none; }
+        @keyframes flash { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.6; } }
         @keyframes shake { 0% { transform: translate(2px, 2px); } 50% { transform: translate(-3px, -2px); } 100% { transform: translate(2px, 2px); } }
+
+        /* ระบบเมนู */
+        .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 1000; background: rgba(0,0,0,0.9); color: white; }
+        .hidden { display: none !important; }
+        button { padding: 15px 30px; margin: 10px; cursor: pointer; font-weight: bold; border-radius: 10px; border: none; font-size: 18px; pointer-events: all; }
         
-        .btn-atk { position: absolute; bottom: 20px; right: 20px; width: 100px; height: 100px; border-radius: 50%; background: red; color: white; z-index: 100; border: 5px solid white; font-weight: bold; }
-        #joy { position: absolute; bottom: 20px; left: 20px; width: 130px; height: 130px; z-index: 100; }
+        /* ปุ่มควบคุม */
+        #controls { position: absolute; bottom: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 500; }
+        #joy { position: absolute; bottom: 40px; left: 40px; width: 150px; height: 150px; pointer-events: all; }
+        .btn-atk { position: absolute; bottom: 40px; right: 40px; width: 110px; height: 110px; border-radius: 50%; background: red; color: white; border: 5px solid white; font-weight: bold; pointer-events: all; font-size: 20px; }
     </style>
 </head>
 <body>
 
-    <div id="ui">
-        <h1 id="hp-display">HP: --</h1>
-        <h2 id="boss-hp-ui" style="color: #ff4444;">BOSS HP: --</h2>
+    <div id="game-ui">
+        <div id="hacked-screen"></div>
+        <div id="stink-screen"></div>
+        <div class="stats">
+            <h1 id="hp-display">HP: --</h1>
+            <h2 id="boss-hp-ui" style="color: #ff4444;">BOSS HP: --</h2>
+            <p id="debuff-status" style="font-weight: bold; color: yellow;"></p>
+        </div>
     </div>
 
-    <div id="stink-screen"></div>
+    <div id="controls" class="hidden">
+        <div id="joy"></div>
+        <button id="atk-btn" class="btn-atk" onclick="attack()">ATK</button>
+    </div>
 
     <div id="landing-page" class="overlay">
-        <h1 style="color:#00ffcc; font-size: 40px;">THE HERTA GAME</h1>
-        <button onclick="showRoles()" style="background:#00ffcc; color:black;">ENTER GAME</button>
+        <h1 style="color:#00ffcc; font-size: 50px;">THE HERTA GAME</h1>
+        <button onclick="showRoles()">ENTER GAME</button>
     </div>
 
     <div id="role-page" class="overlay hidden">
-        <h2>SELECT CHARACTER</h2>
-        <button onclick="selectRole('Speed', this)" style="background:#a349a4; color:white;">SPEED (Silver Wolf)</button>
-        <button onclick="selectRole('Atk', this)" style="background:#ed1c24; color:white;">ATK (T-Rex)</button>
-        <button onclick="selectRole('Tank', this)" style="background:#ff7f27; color:white;">TANK (ถังขยะ)</button>
-        <button id="confirm-btn" class="hidden" onclick="confirmJoin()">START GAME</button>
+        <h2>SELECT YOUR CHARACTER</h2>
+        <button class="role-sel" onclick="selectRole('Speed', this)" style="background:#a349a4; color:white;">SPEED (Silver Wolf)</button>
+        <button class="role-sel" onclick="selectRole('Atk', this)" style="background:#ed1c24; color:white;">ATK (T-Rex)</button>
+        <button class="role-sel" onclick="selectRole('Tank', this)" style="background:#ff7f27; color:white;">TANK (ถังขยะ)</button>
+        <button id="confirm-btn" class="hidden" style="background:#00ffcc; color:black;" onclick="confirmJoin()">START JOURNEY</button>
     </div>
 
-    <div id="joy"></div>
-    <button id="atk-btn" class="btn-atk hidden" onclick="attack()">ATK</button>
-    
     <a-scene>
         <a-assets>
             <a-asset-item id="city-m" src="city.glb"></a-asset-item>
@@ -73,9 +86,9 @@
         <a-entity id="players-container"></a-entity>
         
         <a-entity id="boss-entity" position="0 0 -15">
-            <a-entity gltf-model="#bin-m" scale="6 6 6" animation-mixer></a-entity>
-            <a-image src="#boss-img" position="0 7 0" scale="4 4 4" look-at="#cam"></a-image>
-            <a-text id="boss-label" value="GIANT BOSS" align="center" position="0 10 0" scale="5 5 5" color="red"></a-text>
+            <a-entity gltf-model="#bin-m" scale="6 6 6"></a-entity>
+            <a-image src="#boss-img" position="0 7 0" scale="4 4 4"></a-image>
+            <a-text value="GIANT STINKY BOSS" align="center" position="0 10 0" scale="4 4 4" color="red"></a-text>
         </a-entity>
     </a-scene>
 
@@ -99,99 +112,105 @@
 
         window.selectRole = (role, btn) => {
             window.selectedRole = role;
-            document.querySelectorAll('button').forEach(b => b.style.border = "none");
-            btn.style.border = "4px solid #00ffcc";
+            document.querySelectorAll('.role-sel').forEach(b => b.style.outline = "none");
+            btn.style.outline = "4px solid #00ffcc";
             document.getElementById('confirm-btn').classList.remove('hidden');
         };
 
         window.confirmJoin = () => {
             myRole = window.selectedRole;
-            document.getElementById('role-page').classList.add('hidden');
-            document.getElementById('atk-btn').classList.remove('hidden');
+            document.getElementById('role-page').remove();
+            document.getElementById('controls').classList.remove('hidden');
             document.getElementById('my-hand').setAttribute('visible', 'true');
 
-            // เข้าเกม + เช็กว่ามีบอสในเซิร์ฟเวอร์หรือยัง ถ้าไม่มีให้สร้าง
-            set(ref(db, 'server_boss/' + myId), {
-                id: myId, role: myRole, x: 0, z: 0, hp: (myRole === 'Tank' ? 350 : 100), ry: 0,
+            set(ref(db, 'server_final/' + myId), {
+                id: myId, role: myRole, x: 0, z: 0, hp: (myRole === 'Tank' ? 400 : 100), ry: 0,
                 model: (myRole === 'Tank' ? '#bin-m' : (myRole === 'Atk' ? '#trex-m' : '#fae-m')),
-                stinking: 0
+                hacked: 0, stinking: 0
             });
-            onDisconnect(ref(db, 'server_boss/' + myId)).remove();
+            onDisconnect(ref(db, 'server_final/' + myId)).remove();
 
-            // สร้างบอส (เลือด 3,000 พอ ไม่เยอะเกินไปตามสั่ง)
-            get(ref(db, 'server_boss/' + BOSS_ID)).then(s => {
-                if(!s.exists()) {
-                    set(ref(db, 'server_boss/' + BOSS_ID), { id: BOSS_ID, role: "BOSS", x: 0, z: -15, hp: 3000 });
-                }
+            get(ref(db, 'server_final/' + BOSS_ID)).then(s => {
+                if(!s.exists()) set(ref(db, 'server_final/' + BOSS_ID), { id: BOSS_ID, role: "BOSS", x: 0, z: -15, hp: 3000 });
             });
+            initJoystick();
         };
 
-        // ระบบบอสโจมตี (AI เช็กระยะ)
+        // --- ระบบ Damage Over Time (DOT) ห้ามถอด! ---
         setInterval(() => {
             if (!myRole) return;
-            const rig = document.getElementById('camera-rig').object3D.position;
-            get(ref(db, 'server_boss/' + BOSS_ID)).then(s => {
-                if(!s.exists()) return;
-                const boss = s.val();
-                if (boss.hp <= 0) return;
+            get(ref(db, 'server_final/' + myId)).then(s => {
+                if (!s.exists()) return;
+                let data = s.val();
+                let newHp = data.hp;
+                let updates = {};
 
-                // คำนวณระยะห่างระหว่างเรากับบอส
-                let dist = Math.sqrt(Math.pow(rig.x - boss.x, 2) + Math.pow(rig.z - boss.z, 2));
-                
-                // ถ้าใกล้บอสเกิน (ระยะ 8 หน่วย) บอสจะตบเรา!
-                if (dist < 8) {
-                    get(ref(db, 'server_boss/' + myId)).then(meS => {
-                        if(meS.exists()){
-                            update(ref(db, 'server_boss/' + myId), { 
-                                hp: meS.val().hp - 5, // บอสทำดาเมจ 5 ทุกวินาที
-                                stinking: 5 // ติดสถานะเหม็น 5 วิ
-                            });
-                        }
-                    });
+                if (data.hacked > 0) { newHp -= 12; updates.hacked = data.hacked - 1; }
+                if (data.stinking > 0) { newHp -= 3; updates.stinking = data.stinking - 1; }
+
+                if (newHp !== data.hp || Object.keys(updates).length > 0) {
+                    updates.hp = newHp;
+                    update(ref(db, 'server_final/' + myId), updates);
                 }
             });
         }, 1000);
 
-        // Sync ข้อมูล
-        onValue(ref(db, 'server_boss'), (snapshot) => {
+        // --- Boss AI Attack ---
+        setInterval(() => {
+            if (!myRole) return;
+            const rig = document.getElementById('camera-rig').object3D.position;
+            get(ref(db, 'server_final/' + BOSS_ID)).then(s => {
+                if (s.exists() && s.val().hp > 0) {
+                    const boss = s.val();
+                    let dist = Math.sqrt(Math.pow(rig.x - boss.x, 2) + Math.pow(rig.z - boss.z, 2));
+                    if (dist < 10) {
+                        get(ref(db, 'server_final/' + myId)).then(me => {
+                            if(me.exists()) update(ref(db, 'server_final/' + myId), { hp: me.val().hp - 5, stinking: 5 });
+                        });
+                    }
+                }
+            });
+        }, 1000);
+
+        onValue(ref(db, 'server_final'), (snapshot) => {
             const data = snapshot.val();
             if (!data) return;
-
             if (data[myId]) {
                 const me = data[myId];
                 document.getElementById('hp-display').innerText = "HP: " + me.hp;
+                document.getElementById('hacked-screen').style.display = me.hacked > 0 ? 'block' : 'none';
                 document.getElementById('stink-screen').style.display = me.stinking > 0 ? 'block' : 'none';
-                if (me.hp <= 0) location.reload();
+                document.getElementById('debuff-status').innerText = (me.hacked > 0 ? "⚠️ HACKED " : "") + (me.stinking > 0 ? "🤢 STINKY" : "");
+                if (me.hp <= 0) { alert("GAME OVER!"); location.reload(); }
             }
-
             if (data[BOSS_ID]) {
-                const boss = data[BOSS_ID];
-                document.getElementById('boss-hp-ui').innerText = "BOSS HP: " + boss.hp;
-                const bEl = document.getElementById('boss-entity');
-                bEl.setAttribute('position', `${boss.x} 0 ${boss.z}`);
-                if(boss.hp <= 0) bEl.setAttribute('visible', 'false');
+                document.getElementById('boss-hp-ui').innerText = "BOSS HP: " + data[BOSS_ID].hp;
+                if(data[BOSS_ID].hp <= 0) document.getElementById('boss-entity').setAttribute('visible', 'false');
             }
         });
 
         window.attack = () => {
             document.getElementById('my-hand').setAttribute('animation', "property: position; to: 0.3 -0.4 -0.9; dur: 100; dir: alternate; loop: 2");
             const inter = document.querySelector('a-cursor').components.raycaster.intersections[0];
-            
-            // ตีบอสหรือตีผู้เล่น
             if (inter && inter.object.el) {
-                const tid = inter.object.el.id || BOSS_ID; // ถ้าไม่มี ID ให้ถือว่าตีโดนตัวบอส
-                get(ref(db, `server_boss/${tid}`)).then(s => {
+                const tid = inter.object.el.id || BOSS_ID;
+                get(ref(db, `server_final/${tid}`)).then(s => {
                     if (s.exists()) {
-                        update(ref(db, `server_boss/${tid}`), { hp: s.val().hp - (myRole === 'Atk' ? 25 : 10) });
+                        let up = { hp: s.val().hp - (myRole === 'Atk' ? 20 : 5) };
+                        if (myRole === 'Speed') up.hacked = 10;
+                        if (myRole === 'Tank') up.stinking = 10;
+                        update(ref(db, `server_final/${tid}`), up);
                     }
                 });
             }
         };
 
-        // Movement [เหมือนเดิม]
-        const manager = nipplejs.create({ zone: document.getElementById('joy'), mode: 'static', position: { left: '70px', bottom: '70px' } });
-        manager.on('move', (e, d) => { moveData.x = Math.cos(d.angle.radian) * d.force * 0.2; moveData.z = -Math.sin(d.angle.radian) * d.force * 0.2; });
-        manager.on('end', () => moveData = { x: 0, z: 0 });
+        function initJoystick() {
+            const manager = nipplejs.create({ zone: document.getElementById('joy'), mode: 'static', position: { left: '75px', bottom: '75px' } });
+            manager.on('move', (e, d) => { moveData.x = Math.cos(d.angle.radian) * d.force * 0.22; moveData.z = -Math.sin(d.angle.radian) * d.force * 0.22; });
+            manager.on('end', () => moveData = { x: 0, z: 0 });
+        }
+
         setInterval(() => {
             if (!myRole) return;
             const rig = document.getElementById('camera-rig');
@@ -199,7 +218,7 @@
             let ry = cam.getAttribute('rotation').y * (Math.PI / 180);
             rig.object3D.position.x += moveData.x * Math.cos(ry) + moveData.z * Math.sin(ry);
             rig.object3D.position.z += -moveData.x * Math.sin(ry) + moveData.z * Math.cos(ry);
-            update(ref(db, 'server_boss/' + myId), { x: rig.object3D.position.x, z: rig.object3D.position.z, ry: cam.getAttribute('rotation').y });
+            update(ref(db, 'server_final/' + myId), { x: rig.object3D.position.x, z: rig.object3D.position.z, ry: cam.getAttribute('rotation').y });
         }, 30);
     </script>
 </body>
