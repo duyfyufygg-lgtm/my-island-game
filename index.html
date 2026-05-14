@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Island Survival v3.4.6 - In-Game Admin Fixed</title>
+    <title>Island Survival v3.4.7 - Top Right Admin Fixed</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.2.0/dist/aframe-extras.min.js"></script>
@@ -10,49 +10,46 @@
 
     <style>
       body { margin: 0; overflow: hidden; background: #000; font-family: sans-serif; touch-action: none; }
-      
-      /* Effects */
       #stink-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: radial-gradient(circle, rgba(100,255,0,0) 30%, rgba(50,100,0,0.6) 100%); pointer-events:none; z-index:2000; display:none; }
       #hack-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: repeating-linear-gradient(0deg, rgba(150,0,255,0.15) 0px, rgba(150,0,255,0.15) 2px, transparent 3px); pointer-events:none; z-index:2001; display:none; }
       #possession-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(255,0,0,0.3); border: 15px double red; pointer-events:none; z-index:2002; display:none; color: white; text-align: center; flex-direction: column; justify-content: center; align-items: center; font-size: 30px; font-weight: bold; }
 
-      /* ย้ายปุ่ม ADMIN มาไว้ที่มุมขวาบน (เพื่อไม่ให้ทับปุ่มโจมตี) */
+      /* ✅ ปุ่ม ADMIN มุมขวาบน - แยกชัดเจนจากปุ่มโจมตี */
       #admin-ingame-btn { 
         position: absolute; 
-        top: 15px; 
-        right: 15px; 
-        width: 60px; 
-        height: 35px; 
-        background: rgba(255, 0, 0, 0.6); /* สีแดงกึ่งโปร่งใส */
-        border: 2px solid white;
-        border-radius: 8px;
-        z-index: 5000; 
+        top: 20px; 
+        right: 20px; 
+        width: 70px; 
+        height: 40px; 
+        background: #cc0000; 
+        border: 2px solid #ffffff;
+        border-radius: 10px;
+        z-index: 5500; 
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
         color: white;
-        font-size: 11px;
+        font-size: 14px;
         font-weight: bold;
-        pointer-events: auto; /* ให้กดได้ */
+        pointer-events: auto;
+        box-shadow: 0 0 10px rgba(0,0,0,0.5);
       }
 
       #admin-panel { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.95); z-index: 6000; display:none; flex-direction: column; justify-content: center; align-items: center; color: white; }
 
-      /* Menu & Lobby UI */
       #lobby-screen, #main-menu, #tank-menu { position: absolute; top:0; left:0; width:100%; height:100%; display:flex; flex-direction:column; justify-content:center; align-items:center; background:#111; z-index:4000; color:white; }
       .room-list { width: 85%; height: 200px; overflow-y: auto; background: #222; margin: 15px; border-radius: 10px; padding: 10px; border: 1px solid #444; }
       .room-item { background: #333; margin: 8px; padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
-      .skin-container { display:flex; gap:10px; margin:15px 0; flex-wrap:wrap; justify-content:center; max-width: 90%; }
+      .skin-container { display:flex; gap:10px; margin:15px 0; flex-wrap:wrap; justify-content:center; }
       .skin-btn { width:60px; height:60px; border:2px solid #fff; border-radius:10px; overflow:hidden; }
       .skin-btn.active { border-color:#00ffcc; transform: scale(1.1); }
       .role-btn { padding:14px; margin:6px; width:240px; border-radius:12px; border:2px solid #fff; background:none; color:#fff; font-weight:bold; cursor:pointer; }
       
-      /* Game HUD */
-      #ui-layer { position:absolute; top:15px; left:15px; z-index:999; color:#fff; pointer-events:none; }
+      #ui-layer { position:absolute; top:20px; left:20px; z-index:999; color:#fff; pointer-events:none; }
       #controls-ui { position:absolute; bottom:0; left:0; width:100%; height:100%; z-index:998; pointer-events:none; }
       #joystick-zone { position:absolute; bottom:40px; left:40px; width:120px; height:120px; pointer-events:auto; }
-      .fire-btn { position:absolute; bottom:50px; right:40px; width:90px; height:90px; border-radius:50%; background:#ff4444; color:white; border:4px solid #fff; pointer-events:auto; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size: 18px; }
+      .fire-btn { position:absolute; bottom:50px; right:40px; width:100px; height:100px; border-radius:50%; background:#ff4444; color:white; border:4px solid #fff; pointer-events:auto; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size: 20px; }
       .hidden { display:none !important; }
     </style>
   </head>
@@ -63,15 +60,15 @@
     <div id="possession-overlay"><span>⚠️ YOU ARE POSSESSED! ⚠️</span></div>
 
     <div id="lobby-screen">
-      <h1 style="color: #00ffcc;">SELECT SERVER</h1>
-      <div class="room-list" id="room-list-ui">Searching...</div>
-      <button class="role-btn" onclick="createRoom()" style="background:#00ffcc; color:black;">+ NEW SERVER</button>
+      <h1 style="color: #00ffcc;">ISLAND SURVIVAL</h1>
+      <div class="room-list" id="room-list-ui">Searching for rooms...</div>
+      <button class="role-btn" onclick="createRoom()" style="background:#00ffcc; color:black;">+ NEW ROOM</button>
     </div>
 
     <div id="admin-panel">
-      <h2 style="color:red;">GOD MODE</h2>
+      <h2 style="color:red;">GOD MODE COMMAND</h2>
       <div id="admin-login-area">
-        <input type="password" id="admin-pass" placeholder="Password" style="padding:12px; margin-bottom:10px;">
+        <input type="password" id="admin-pass" placeholder="Password" style="padding:15px; margin-bottom:15px; width: 200px;">
         <button class="role-btn" onclick="checkAdmin()">LOGIN</button>
       </div>
       <div id="admin-tools" style="display:none; text-align:center;">
@@ -81,24 +78,43 @@
           <button class="role-btn" id="btn-posses" onclick="togglePossession()">4. สิงร่าง (OFF)</button>
           <button class="role-btn" style="background:red;" onclick="adminKillAll()">RESET ROOM</button>
       </div>
-      <button class="role-btn" onclick="document.getElementById('admin-panel').style.display='none'">BACK</button>
+      <button class="role-btn" onclick="document.getElementById('admin-panel').style.display='none'">CLOSE</button>
+    </div>
+
+    <div id="main-menu" class="hidden">
+      <h2 style="color: #00ffcc;">เลือกสกิน</h2>
+      <div class="skin-container">
+        <div class="skin-btn active" onclick="selectSkin('#imgRed', this)"><img src="jjs.png" width="100%"></div>
+        <div class="skin-btn" onclick="selectSkin('#imgBlue', this)"><img src="jjkl.png" width="100%"></div>
+        <div class="skin-btn" onclick="selectSkin('#imgHerta', this)"><img src="The Herta.png" width="100%"></div>
+        <div class="skin-btn" onclick="selectSkin('#imgSparcy', this)"><img src="Sparcy.png" width="100%"></div>
+        <div class="skin-btn" onclick="selectSkin('#img67', this)"><img src="67.png" width="100%"></div>
+      </div>
+      <button class="role-btn" onclick="startGame('P1')">มือปืน</button>
+      <button class="role-btn" onclick="startGame('P2')">มือขวาน</button>
+      <button class="role-btn" style="background:#ff9900; color:black;" onclick="openTankMenu()">สายแทงค์</button>
+    </div>
+
+    <div id="tank-menu" class="hidden">
+      <h2>TANK SELECTION</h2>
+      <button class="role-btn" onclick="selectTankSubSkin('rex', '#tankModel')">T-Rex</button>
+      <button class="role-btn" onclick="selectTankSubSkin('bin', '#binModel')">ถังขยะ</button>
+      <button class="role-btn" onclick="selectTankSubSkin('sw', '#faeModel')">S.Wolf</button>
+      <button class="role-btn" onclick="startGame('P3')" style="background:#00ffcc; color:black; margin-top:20px;">START GAME</button>
     </div>
 
     <div id="ui-layer" class="hidden">
-      <div style="font-size: 20px;">HP: <span id="hp-text">100</span></div>
+      <div style="font-size: 22px; text-shadow: 2px 2px #000;">HP: <span id="hp-text">100</span></div>
     </div>
 
     <div id="controls-ui" class="hidden">
       <div id="joystick-zone"></div>
-      <div id="shoot-btn" class="fire-btn">FIRE</div>
+      <div id="shoot-btn" class="fire-btn">ATTACK</div>
       <div id="admin-ingame-btn" onclick="showAdminPanel()">ADMIN</div>
     </div>
 
-    <div id="main-menu" class="hidden">... (Skin Selection Buttons) ...</div>
-    <div id="tank-menu" class="hidden">... (Tank Models Buttons) ...</div>
-
-    <a-scene renderer="antialias: false; precision: medium;">
-      <a-assets timeout="20000">
+    <a-scene renderer="colorManagement: true; antialias: false;">
+      <a-assets>
         <a-asset-item id="gunModel" src="asd.glb"></a-asset-item>
         <a-asset-item id="axeModel" src="fps.glb"></a-asset-item> 
         <a-asset-item id="islandModel" src="city.glb"></a-asset-item>
@@ -128,16 +144,111 @@
     </a-scene>
 
     <script type="module">
-      /* ... Sync Logic & Admin Functions เหมือน V3.4.5 ... */
-      // เน้นจุดที่แสดงผล Admin
-      window.showAdminPanel = () => { 
-        document.getElementById('admin-panel').style.display='flex'; 
-        console.log("Admin Panel Opened");
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+      import { getDatabase, ref, onValue, update, remove, onDisconnect, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+      const firebaseConfig = { databaseURL: "https://the-herta-cf467-default-rtdb.asia-southeast1.firebasedatabase.app/" };
+      const app = initializeApp(firebaseConfig);
+      const db = getDatabase(app);
+
+      let health = 100, myRole = "", mySkin = "#imgRed", moveSpeed = 0.3, currentRoom = "";
+      let selectedTankModel = "#tankModel", isStinking = false, isHacked = false;
+      let isInvisible = false, isPossessing = false, possessedTarget = null;
+
+      onValue(ref(db, 'rooms'), snap => {
+        const rooms = snap.val() || {}; const ui = document.getElementById('room-list-ui'); ui.innerHTML = "";
+        Object.keys(rooms).forEach(rId => {
+          let div = document.createElement('div'); div.className="room-item";
+          div.innerHTML = `<span>Server: ${rId}</span> <button onclick="joinRoom('${rId}')">JOIN</button>`;
+          ui.appendChild(div);
+        });
+      });
+
+      window.joinRoom = rId => { currentRoom = rId; document.getElementById('lobby-screen').classList.add('hidden'); document.getElementById('main-menu').classList.remove('hidden'); };
+      window.createRoom = () => joinRoom("R_" + Math.floor(Math.random()*999));
+
+      // Admin Logic
+      window.showAdminPanel = () => { document.getElementById('admin-panel').style.display='flex'; };
+      window.checkAdmin = () => { if(document.getElementById('admin-pass').value === 'the-herta-game') { document.getElementById('admin-login-area').style.display='none'; document.getElementById('admin-tools').style.display='block'; } };
+      window.toggleInvisible = () => { isInvisible = !isInvisible; document.getElementById('btn-inviz').innerText = `1. ล่องหน (${isInvisible ? 'ON' : 'OFF'})`; if(isInvisible) remove(ref(db, `rooms/${currentRoom}/players/${myRole}`)); };
+      window.massEffect = t => { get(ref(db, `rooms/${currentRoom}/players`)).then(s => { const p = s.val() || {}; Object.keys(p).forEach(id => { if(id !== myRole) update(ref(db, `rooms/${currentRoom}/players/${id}`), {[t]: true}); }); }); };
+      window.togglePossession = () => {
+        isPossessing = !isPossessing;
+        const btn = document.getElementById('btn-posses');
+        if(isPossessing) {
+          get(ref(db, `rooms/${currentRoom}/players`)).then(s => {
+            const p = s.val() || {}; const targets = Object.keys(p).filter(id => id !== myRole);
+            if(targets.length > 0) { possessedTarget = targets[0]; update(ref(db, `rooms/${currentRoom}/players/${possessedTarget}`), { possessedBy: myRole }); btn.innerText = `4. สิงร่าง (${possessedTarget})`; }
+            else { isPossessing = false; alert("No one here!"); }
+          });
+        } else { if(possessedTarget) update(ref(db, `rooms/${currentRoom}/players/${possessedTarget}`), { possessedBy: null }); possessedTarget = null; btn.innerText = "4. สิงร่าง (OFF)"; }
       };
-      
-      // ฟังก์ชันอื่นๆ เหมือนเดิมเป๊ะครับ
-      /* [ตัดส่วน Script เดิมมาแปะได้เลยครับ] */
+      window.adminKillAll = () => remove(ref(db, `rooms/${currentRoom}/players`));
+
+      // Game Logic
+      window.selectSkin = (s, b) => { mySkin = s; document.querySelectorAll('.skin-btn').forEach(x => x.classList.remove('active')); b.classList.add('active'); };
+      window.openTankMenu = () => { document.getElementById('main-menu').classList.add('hidden'); document.getElementById('tank-menu').classList.remove('hidden'); };
+      window.selectTankSubSkin = (n, m) => { selectedTankModel = m; };
+
+      window.startGame = function(role) {
+        myRole = role; document.getElementById('main-menu').classList.add('hidden'); document.getElementById('tank-menu').classList.add('hidden');
+        document.getElementById('ui-layer').classList.remove('hidden'); document.getElementById('controls-ui').classList.remove('hidden');
+        if(role === 'P3') { health = 300; document.getElementById('my-tank-model').setAttribute('gltf-model', selectedTankModel); document.getElementById('my-tank-model').setAttribute('visible', true); document.getElementById('my-skin-display').setAttribute('visible', false); }
+        else { moveSpeed = (role === 'P2' ? 0.6 : 0.3); document.getElementById('my-skin-display').setAttribute('src', mySkin); }
+        document.getElementById('weapon-' + role).setAttribute('visible', true);
+        const myRef = ref(db, `rooms/${currentRoom}/players/${myRole}`);
+        onDisconnect(myRef).remove();
+        setInterval(() => {
+          if(!isInvisible) {
+            let pos = document.getElementById('rig').getAttribute('position');
+            let rot = document.getElementById('camera').getAttribute('rotation');
+            update(myRef, { p: pos, r: rot, hp: health, skin: (role==='P3'?'TANK':mySkin), tankType: (role==='P3'?selectedTankModel:'') });
+            if(isPossessing && possessedTarget) update(ref(db, `rooms/${currentRoom}/players/${possessedTarget}`), { p: {x: pos.x, y: pos.y, z: pos.z - 2}, r: rot });
+          }
+        }, 50);
+        onValue(ref(db, `rooms/${currentRoom}/players`), snap => {
+          const p = snap.val() || {};
+          ['P1','P2','P3'].forEach(id => {
+            const ent = document.getElementById('player-' + id);
+            if(id === myRole) { 
+               health = p[id]?.hp ?? health; document.getElementById('hp-text').innerText = Math.floor(health);
+               if(p[id]?.stink && !isStinking) applyEffect('stink'); if(p[id]?.hacked && !isHacked) applyEffect('hacked');
+               document.getElementById('possession-overlay').style.display = p[id]?.possessedBy ? 'flex' : 'none';
+            } else if(p[id]) {
+              ent.setAttribute('visible', p[id].hp > 0); ent.setAttribute('position', p[id].p); ent.setAttribute('rotation', {x:0, y:p[id].r.y, z:0});
+              if(p[id].skin === 'TANK') { ent.querySelector('#player-P3-model').setAttribute('gltf-model', p[id].tankType); }
+              else { ent.querySelector('a-image').setAttribute('src', p[id].skin); }
+            } else { ent.setAttribute('visible', false); }
+          });
+        });
+        initJoystick();
+      };
+
+      function applyEffect(t) { document.getElementById(t+'-overlay').style.display='block'; setTimeout(() => { document.getElementById(t+'-overlay').style.display='none'; update(ref(db, `rooms/${currentRoom}/players/${myRole}`), {[t]: false}); }, 5000); }
+
+      document.getElementById('shoot-btn').addEventListener('touchstart', () => {
+        const cam = document.getElementById('camera'), ray = new THREE.Raycaster();
+        const p = new THREE.Vector3(), q = new THREE.Quaternion(), d = new THREE.Vector3(0,0,-1);
+        cam.object3D.getWorldPosition(p); cam.object3D.getWorldQuaternion(q);
+        d.applyQuaternion(q); ray.set(p, d); ray.far = 15;
+        const hits = ray.intersectObjects(Array.from(document.querySelectorAll('.targetable')).map(t => t.getObject3D('mesh')).filter(m => m));
+        if (hits.length > 0) { const tid = hits[0].object.el.dataset.id; get(ref(db, `rooms/${currentRoom}/players/${tid}/hp`)).then(s => { update(ref(db, `rooms/${currentRoom}/players/${tid}`), { hp: (s.val() || 100) - 35 }); }); }
+      });
+
+      function initJoystick() {
+        nipplejs.create({ zone: document.getElementById('joystick-zone'), mode: 'static', position: {left: '70px', bottom: '70px'}, color: 'white' })
+        .on('move', (evt, data) => {
+          get(ref(db, `rooms/${currentRoom}/players/${myRole}/possessedBy`)).then(s => { if(s.val()) return;
+            const rig = document.querySelector('#rig'), cam = document.querySelector('#camera');
+            let r = cam.getAttribute('rotation').y * Math.PI / 180;
+            let p = rig.getAttribute('position');
+            let f = Math.sin(data.angle.radian) * moveSpeed, sd = Math.cos(data.angle.radian) * moveSpeed;
+            p.x -= (Math.sin(r) * f + Math.cos(r) * sd); p.z -= (Math.cos(r) * f - Math.sin(r) * sd);
+            rig.setAttribute('position', p);
+          });
+        });
+      }
     </script>
   </body>
-  </html>
-          
+                                                                      </html>
+  
